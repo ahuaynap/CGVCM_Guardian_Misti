@@ -5,7 +5,7 @@ public class InteractionSystem : MonoBehaviour
 {
     [Header("Raycast Settings")]
     [SerializeField] private Camera playerCamera;
-    [SerializeField] private float intreactionDistance = 3f;
+    [SerializeField] private float interactionDistance = 3f;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -25,16 +25,20 @@ public class InteractionSystem : MonoBehaviour
 
     private void TryInteract()
     {
-        Debug.Log("Jererere");
         Ray ray = new Ray(
             playerCamera.transform.position,
             playerCamera.transform.forward);
 
-        if (Physics.Raycast(ray, out RaycastHit hit, intreactionDistance))
-        {
-            IInteractable interactable = hit.collider.GetComponent<IInteractable>();
+        Debug.DrawRay(
+            ray.origin,
+            ray.direction * interactionDistance,
+            Color.green
+        );
 
-            if (interactable != null)
+        if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance))
+        {
+           
+            if (hit.collider.TryGetComponent<IInteractable>(out IInteractable interactable))
             {
                 interactable.Interact();
             }
