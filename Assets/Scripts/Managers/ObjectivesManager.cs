@@ -1,5 +1,5 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class ObjectivesManager : MonoBehaviour
 {
@@ -16,23 +16,11 @@ public class ObjectivesManager : MonoBehaviour
 
     public static ObjectivesManager Instance { get; private set; }
 
-    private int currentObjectiveIndex = 0;
+    private int currentObjectiveIndex;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    private void Awake()
     {
-        // InitializeObjectives();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-    void Awake()
-    {
-        if(Instance != null && Instance != this)
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
             return;
@@ -40,53 +28,87 @@ public class ObjectivesManager : MonoBehaviour
 
         Instance = this;
         InitializeObjectives();
-        objectiveUI.Refresh(GetCurrentObjective());
-    }
 
-    private void InitializeObjectives()
-    {
-        objectives.Add(
-            new Objective("Sal de la habitacion")
-        );
-
-        objectives.Add(
-            new Objective("Recoge la mochila de emergencia")
-        );
-
-        objectives.Add(
-            new Objective("Dirigete al punto seguro")
-        );
-        Debug.Log("Ya agregue");
-        Debug.Log($"data{objectives.Count}index{currentObjectiveIndex}");
-    }
-
-    public Objective GetCurrentObjective()
-    {
-        Debug.Log($"data{objectives.Count}index{currentObjectiveIndex}");
-        return objectives[currentObjectiveIndex];
-    }
-
-    public void CompleteCurrentObjective()
-    {
-        currentObjectiveIndex++;
-
-        if (currentObjectiveIndex >= objectives.Count)
+        if (objectiveUI == null)
         {
-            objectiveUI.Hide();
-            inventoryUI.Hide();
-            gameCompletionUI.Show();
-
+            Debug.LogWarning("ObjectivesManager requires an ObjectiveUI reference.", this);
             return;
         }
 
         objectiveUI.Refresh(GetCurrentObjective());
     }
 
-    public bool IsSimulationCompleted
+    private void InitializeObjectives()
     {
-        get
+        objectives.Add(
+            new Objective(GameIds.ExitRoomObjective, "Sal de la habitacion")
+        );
+
+        objectives.Add(
+            new Objective(
+                GameIds.CollectEmergencyBackpackObjective,
+                "Recoge la mochila de emergencia")
+        );
+
+        objectives.Add(
+            new Objective(GameIds.ReachSafeZoneObjective, "Dirigete al punto seguro")
+        );
+    }
+
+    public Objective GetCurrentObjective()
+    {
+        if (IsSimulationCompleted)
         {
-           return currentObjectiveIndex >= objectives.Count; 
+            return null;
+        }
+
+        return objectives[currentObjectiveIndex];
+    }
+
+    public bool IsCurrentObjective(string objectiveId)
+    {
+        Objective currentObjective = GetCurrentObjective();
+        return currentObjective != null && currentObjective.Id == objectiveId;
+    }
+
+    public bool TryCompleteObjective(string objectiveId)
+    {
+        if (!IsCurrentObjective(objectiveId))
+        {
+            return false;
+        }
+
+        currentObjectiveIndex++;
+
+        if (IsSimulationCompleted)
+        {
+            objectiveUI?.Hide();
+            inventoryUI?.Hide();
+            gameCompletionUI?.Show();
+            return true;
+        }
+
+        objectiveUI?.Refresh(GetCurrentObjective());
+        return true;
+    }
+
+    public bool IsSimulationCompleted => currentObjectiveIndex >= objectives.Count;
+
+    private void OnValidate()
+    {
+        if (objectiveUI == null)
+        {
+            Debug.LogWarning("ObjectivesManager requires an ObjectiveUI reference.", this);
+        }
+
+        if (inventoryUI == null)
+        {
+            Debug.LogWarning("ObjectivesManager requires an InventoryUI reference.", this);
+        }
+
+        if (gameCompletionUI == null)
+        {
+            Debug.LogWarning("ObjectivesManager requires a GameCompletionUI reference.", this);
         }
     }
 }

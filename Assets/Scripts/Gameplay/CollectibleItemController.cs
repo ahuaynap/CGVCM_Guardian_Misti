@@ -2,41 +2,48 @@ using UnityEngine;
 
 public class CollectibleItemController : MonoBehaviour, IInteractable
 {
-
     [SerializeField]
     private InventoryItemDefinition definition;
 
-    public string Prompt => $"Recoger {definition.Name}";
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    public string Prompt => definition == null ? "Recoger objeto" : $"Recoger {definition.Name}";
 
     public void Interact()
     {
-        InventoryItem item = new InventoryItem(definition);
-        InventoryManager.Instance.AddItem(item);
-        CollectBackpack();
-        NotifyObjectiveCompleted();
-    }
-
-    private void NotifyObjectiveCompleted()
-    {
-        if(ObjectivesManager.Instance == null)
+        if (definition == null)
         {
-            Debug.LogWarning("ObjectivesManager not found");
+            Debug.LogWarning("CollectibleItemController requires an item definition.", this);
             return;
         }
 
-        ObjectivesManager.Instance.CompleteCurrentObjective();
+        if (InventoryManager.Instance == null)
+        {
+            Debug.LogWarning("InventoryManager not found.", this);
+            return;
+        }
+
+        if (ObjectivesManager.Instance != null &&
+            !ObjectivesManager.Instance.IsCurrentObjective(
+                GameIds.CollectEmergencyBackpackObjective))
+        {
+            return;
+        }
+
+        InventoryItem item = new InventoryItem(definition);
+        if (!InventoryManager.Instance.AddItem(item))
+        {
+            return;
+        }
+
+        CollectBackpack();
+
+        if (ObjectivesManager.Instance == null)
+        {
+            Debug.LogWarning("ObjectivesManager not found.", this);
+            return;
+        }
+
+        ObjectivesManager.Instance.TryCompleteObjective(
+            GameIds.CollectEmergencyBackpackObjective);
     }
 
     private void CollectBackpack()
@@ -44,4 +51,11 @@ public class CollectibleItemController : MonoBehaviour, IInteractable
         gameObject.SetActive(false);
     }
 
+    private void OnValidate()
+    {
+        if (definition == null)
+        {
+            Debug.LogWarning("CollectibleItemController requires an item definition.", this);
+        }
+    }
 }

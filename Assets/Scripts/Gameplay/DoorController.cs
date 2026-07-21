@@ -9,25 +9,19 @@ public class DoorController : MonoBehaviour, IInteractable
     [SerializeField]
     private float openSpeed = 90f;
 
-    private bool isOpen = false;
-
-    private bool isOpening = false;
-
+    private bool isOpen;
+    private bool isOpening;
     private Quaternion initialRotation;
-    
     private Quaternion targetRotation;
 
-    public string Prompt => $"Abrir puerta";
+    public string Prompt => "Abrir puerta";
 
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    private void Awake()
     {
-        
+        initialRotation = transform.rotation;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
         if (!isOpening)
         {
@@ -37,14 +31,15 @@ public class DoorController : MonoBehaviour, IInteractable
         RotateDoor();
     }
 
-    private void Awake()
-    {
-        initialRotation = transform.rotation;
-    }
-
     public void Interact()
     {
         if (isOpen || isOpening)
+        {
+            return;
+        }
+
+        if (ObjectivesManager.Instance != null &&
+            !ObjectivesManager.Instance.IsCurrentObjective(GameIds.ExitRoomObjective))
         {
             return;
         }
@@ -56,7 +51,6 @@ public class DoorController : MonoBehaviour, IInteractable
     public void OpenDoor()
     {
         transform.rotation = initialRotation * Quaternion.Euler(0f, openAngle, 0f);
-
         isOpen = true;
     }
 
@@ -71,22 +65,20 @@ public class DoorController : MonoBehaviour, IInteractable
         if (Quaternion.Angle(transform.rotation, targetRotation) < 0.1f)
         {
             transform.rotation = targetRotation;
-
             isOpening = false;
             isOpen = true;
-
             NotifyObjectiveCompleted();
         }
     }
 
     private void NotifyObjectiveCompleted()
     {
-        if(ObjectivesManager.Instance == null)
+        if (ObjectivesManager.Instance == null)
         {
-            Debug.LogWarning("ObjectivesManager not found");
+            Debug.LogWarning("ObjectivesManager not found.", this);
             return;
         }
 
-        ObjectivesManager.Instance.CompleteCurrentObjective();
+        ObjectivesManager.Instance.TryCompleteObjective(GameIds.ExitRoomObjective);
     }
 }

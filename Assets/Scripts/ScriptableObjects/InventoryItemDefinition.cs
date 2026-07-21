@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 [CreateAssetMenu(
     fileName = "New Iventory Item",
@@ -7,7 +6,6 @@ using UnityEngine.UI;
 )]
 public class InventoryItemDefinition : ScriptableObject
 {
-
     [field: SerializeField]
     public Sprite Icon { get; private set; }
 
@@ -19,4 +17,12 @@ public class InventoryItemDefinition : ScriptableObject
 
     [field: SerializeField]
     public string Description { get; private set; }
+
+    private void OnValidate()
+    {
+        if (string.IsNullOrWhiteSpace(Id))
+        {
+            Debug.LogWarning("Inventory item definitions require a non-empty ID.", this);
+        }
+    }
 }

@@ -13,9 +13,9 @@ public class InventoryManager : MonoBehaviour
     [SerializeField]
     private NotificationUI notificationUI;
 
-    void Awake()
+    private void Awake()
     {
-        if(Instance != null && Instance != this)
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
             return;
@@ -23,17 +23,47 @@ public class InventoryManager : MonoBehaviour
 
         Instance = this;
 
+        if (inventoryUI == null)
+        {
+            Debug.LogWarning("InventoryManager requires an InventoryUI reference.", this);
+            return;
+        }
+
         inventoryUI.Refresh(null, ItemsCount);
     }
 
-    public void AddItem(InventoryItem item)
+    public bool AddItem(InventoryItem item)
     {
-        items.Add(item);
+        if (item == null || item.Definition == null)
+        {
+            Debug.LogWarning("Cannot add an inventory item without a definition.", this);
+            return false;
+        }
 
-        inventoryUI.Refresh(item, ItemsCount);
-        notificationUI.Show(
-            item
-        );
+        if (string.IsNullOrWhiteSpace(item.Id))
+        {
+            Debug.LogWarning("Cannot add an inventory item with an empty ID.", item.Definition);
+            return false;
+        }
+
+        if (HasItem(item.Id))
+        {
+            return false;
+        }
+
+        items.Add(item);
+        inventoryUI?.Refresh(item, ItemsCount);
+
+        if (notificationUI != null)
+        {
+            notificationUI.Show(item);
+        }
+        else
+        {
+            Debug.LogWarning("InventoryManager requires a NotificationUI reference.", this);
+        }
+
+        return true;
     }
 
     public bool HasItem(string itemId)
@@ -41,13 +71,20 @@ public class InventoryManager : MonoBehaviour
         return items.Exists(item => item.Id == itemId);
     }
 
-    public int ItemsCount
+    public int ItemsCount => items.Count;
+
+    public IReadOnlyList<InventoryItem> Items => items.AsReadOnly();
+
+    private void OnValidate()
     {
-        get
+        if (inventoryUI == null)
         {
-            return items.Count;
+            Debug.LogWarning("InventoryManager requires an InventoryUI reference.", this);
+        }
+
+        if (notificationUI == null)
+        {
+            Debug.LogWarning("InventoryManager requires a NotificationUI reference.", this);
         }
     }
-
-    public IReadOnlyList<InventoryItem> Items { get; }
 }
