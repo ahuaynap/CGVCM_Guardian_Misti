@@ -6,6 +6,11 @@ public class InteractionSystem : MonoBehaviour
     [Header("Raycast Settings")]
     [SerializeField] private Camera playerCamera;
     [SerializeField] private float interactionDistance = 3f;
+
+    [Header("UI")]
+    [SerializeField] private InteractionUIController interactionUIController;
+
+    private IInteractable currentInteractable;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -16,32 +21,41 @@ public class InteractionSystem : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        DetectInteractable();
+
         if (Keyboard.current.eKey.wasPressedThisFrame)
         {
-            TryInteract();
+            Interact();
         }
         
     }
 
-    private void TryInteract()
+    private void DetectInteractable()
     {
+        currentInteractable = null;
+        interactionUIController.Hide();
+        
         Ray ray = new Ray(
             playerCamera.transform.position,
             playerCamera.transform.forward);
 
-        Debug.DrawRay(
-            ray.origin,
-            ray.direction * interactionDistance,
-            Color.green
-        );
-
         if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance))
         {
-           
-            if (hit.collider.TryGetComponent<IInteractable>(out IInteractable interactable))
+            if (hit.collider.TryGetComponent(out IInteractable interactable))
             {
-                interactable.Interact();
+                currentInteractable = interactable;
+
+                interactionUIController.Show(interactable);
+
+                return;
             }
         }
+
     }
+
+    private void Interact()
+    {
+        currentInteractable?.Interact();
+    }
+
 }

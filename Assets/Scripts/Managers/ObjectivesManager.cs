@@ -8,6 +8,12 @@ public class ObjectivesManager : MonoBehaviour
     [SerializeField]
     private ObjectiveUI objectiveUI;
 
+    [SerializeField]
+    private InventoryUI inventoryUI;
+
+    [SerializeField]
+    private GameCompletionUI gameCompletionUI;
+
     public static ObjectivesManager Instance { get; private set; }
 
     private int currentObjectiveIndex = 0;
@@ -62,12 +68,25 @@ public class ObjectivesManager : MonoBehaviour
 
     public void CompleteCurrentObjective()
     {
-        if (currentObjectiveIndex >= objectives.Count - 1)
+        currentObjectiveIndex++;
+
+        if (currentObjectiveIndex >= objectives.Count)
         {
+            objectiveUI.Hide();
+            inventoryUI.Hide();
+            gameCompletionUI.Show();
+
             return;
         }
 
-        currentObjectiveIndex++;
         objectiveUI.Refresh(GetCurrentObjective());
+    }
+
+    public bool IsSimulationCompleted
+    {
+        get
+        {
+           return currentObjectiveIndex >= objectives.Count; 
+        }
     }
 }

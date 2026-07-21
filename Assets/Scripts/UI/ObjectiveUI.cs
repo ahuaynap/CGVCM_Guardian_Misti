@@ -20,8 +20,16 @@ public class ObjectiveUI : MonoBehaviour
 
     public void Refresh(Objective objective)
     {
-        Debug.Log("Here");
+        objectiveText.text = $"{objective.Description}";
+    }
 
-        objectiveText.text = $"Objectivo\n{objective.Description}";
+    public void Show()
+    {
+        gameObject.SetActive(true);
+    }
+
+    public void Hide()
+    {
+        gameObject.SetActive(false);
     }
 }
