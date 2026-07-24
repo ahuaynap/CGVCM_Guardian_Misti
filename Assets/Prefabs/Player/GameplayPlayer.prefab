@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 6566203436919134637}
   - component: {fileID: 6069029887582889029}
   - component: {fileID: 7948895809034784781}
-  - component: {fileID: 6256273857809503166}
+  - component: {fileID: 789344016048812427}
   m_Layer: 2
   m_Name: GameplayPlayer
   m_TagString: Player
@@ -62,7 +62,7 @@ CharacterController:
   m_SlopeLimit: 48
   m_StepOffset: 0.32
   m_SkinWidth: 0.08
-  m_MinMoveDistance: 0.001
+  m_MinMoveDistance: 0
   m_Center: {x: 0, y: 1, z: 0}
 --- !u!114 &8718554836475324020
 MonoBehaviour:
@@ -173,7 +173,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   interactionUIController: {fileID: 0}
---- !u!114 &6256273857809503166
+--- !u!114 &789344016048812427
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -182,13 +182,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 1029617408505352869}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4cd0aab64c02078babba4c6df40504dd, type: 3}
+  m_Script: {fileID: 11500000, guid: 1fae17233f3927519b737e0f3836967b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GameplayInputController
+  m_EditorClassIdentifier: Assembly-CSharp::GameplayStateController
   playerInput: {fileID: 1948990629934989151}
   movement: {fileID: 6566203436919134637}
   starterInputs: {fileID: 8718554836475324020}
   interaction: {fileID: 7948895809034784781}
+  pausePanel: {fileID: 0}
+  completionPanel: {fileID: 0}
 --- !u!1 &3143390241303902954
 GameObject:
   m_ObjectHideFlags: 0

@@ -58,7 +58,6 @@ public sealed class SimulationSession : MonoBehaviour
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode) => HandleSceneLoaded(scene.name);
     public void HandleSceneLoaded(string sceneName)
     {
-        Time.timeScale = 1f;
         if (sceneName != SceneNames.MainMenu) return;
         if (Application.isPlaying) Destroy(gameObject); else DestroyImmediate(gameObject);
     }

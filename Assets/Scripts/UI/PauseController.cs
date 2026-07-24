@@ -3,10 +3,9 @@ using UnityEngine.InputSystem;
 
 public class PauseController : MonoBehaviour
 {
-    [SerializeField] private GameObject pausePanel;
     [SerializeField] private SceneLoader sceneLoader;
-    [SerializeField] private GameplayInputController inputController;
-    public bool IsPaused => inputController != null && inputController.State == GameplayInputState.Paused;
+    [SerializeField] private GameplayStateController stateController;
+    public bool IsPaused => stateController != null && stateController.State == GameplayState.Paused;
 
     private void Update()
     {
@@ -15,13 +14,13 @@ public class PauseController : MonoBehaviour
     public void TogglePause() { if (IsPaused) Resume(); else Pause(); }
     public void Pause()
     {
-        if (inputController == null || inputController.State == GameplayInputState.Completed) return;
-        SimulationSession.Instance?.RecordPause(); inputController.EnterPause(); if (pausePanel != null) pausePanel.SetActive(true);
+        if (stateController == null || stateController.State is GameplayState.Completed or GameplayState.Transitioning) return;
+        SimulationSession.Instance?.RecordPause(); stateController.RequestState(GameplayState.Paused);
     }
     public void Resume()
     {
-        if (!IsPaused) return; if (pausePanel != null) pausePanel.SetActive(false); inputController.EnterGameplay();
+        if (!IsPaused) return; stateController.RequestState(GameplayState.Playing);
     }
-    public void Reload() { Time.timeScale = 1f; sceneLoader?.ReloadCurrentScene(); }
-    public void MainMenu() { Time.timeScale = 1f; sceneLoader?.LoadMainMenu(); }
+    public void Reload() => sceneLoader?.ReloadCurrentScene();
+    public void MainMenu() => sceneLoader?.LoadMainMenu();
 }
