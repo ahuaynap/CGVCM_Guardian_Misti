@@ -1,52 +1,25 @@
 using System.Collections;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class NotificationUI : MonoBehaviour
 {
-
     [SerializeField] private Image icon;
     [SerializeField] private TMP_Text titleText;
-
     [SerializeField] private TMP_Text descriptionText;
-
     [SerializeField] private Animator animator;
-
-    private Coroutine notificationCoroutine;
-
+    private Coroutine routine;
     public void Show(InventoryItem item)
     {
-        if (notificationCoroutine != null)
-        {
-            StopCoroutine(notificationCoroutine);
-            animator.Rebind();
-        }
-
-        icon.sprite = item.Icon;
-        titleText.text = "Objecto obtenido";
-        descriptionText.text = item.Name;
-
-        notificationCoroutine = StartCoroutine(PlayNotification());
+        if (icon != null) { icon.enabled = item.Icon != null; icon.sprite = item.Icon; }
+        ShowMessage("Objeto obtenido", item.Name);
     }
-
-    public IEnumerator PlayNotification()
+    public void ShowMessage(string title, string description)
     {
-        animator.Play("In", 0, 0);
-
-        yield return new WaitForSeconds(0.3f);
-
-        animator.Play("Loop", 0, 0);
-
-        yield return new WaitForSeconds(0.6f);
-
-        animator.Play("Out", 0, 0);
-
-        yield return new WaitForSeconds(0.3f);
-
-        notificationCoroutine = null;
+        if (routine != null) StopCoroutine(routine);
+        titleText.text = title; descriptionText.text = description; gameObject.SetActive(true);
+        routine = StartCoroutine(HideLater());
     }
-
+    private IEnumerator HideLater() { yield return new WaitForSecondsRealtime(2.4f); gameObject.SetActive(false); routine = null; }
 }

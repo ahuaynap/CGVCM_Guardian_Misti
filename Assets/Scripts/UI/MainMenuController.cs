@@ -3,6 +3,7 @@ using UnityEngine;
 public class MainMenuController : MonoBehaviour
 {
     [SerializeField] private SceneLoader sceneLoader;
+    [SerializeField] private GameObject instructionsPanel;
 
     private void OnEnable()
     {
@@ -18,6 +19,11 @@ public class MainMenuController : MonoBehaviour
         }
 
         sceneLoader.LoadLevel01();
+    }
+
+    public void ToggleInstructions()
+    {
+        if (instructionsPanel != null) instructionsPanel.SetActive(!instructionsPanel.activeSelf);
     }
 
     public void QuitGame()

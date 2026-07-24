@@ -58,6 +58,7 @@ public class SceneLoader : MonoBehaviour
         }
 
         isLoading = true;
+        Time.timeScale = 1f;
         SceneManager.LoadScene(sceneName);
         return true;
     }
