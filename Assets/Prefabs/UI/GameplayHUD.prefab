@@ -445,7 +445,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CrosshairUI
   crossHair: {fileID: 0}
   defaultColor: {r: 1, g: 1, b: 1, a: 1}
-  interactableColor: {r: 0.2, g: 1, b: 0.45, a: 1}
+  interactableColor: {r: 0.15, g: 0.85, b: 1, a: 1}
 --- !u!1 &6503445684200790790
 GameObject:
   m_ObjectHideFlags: 0

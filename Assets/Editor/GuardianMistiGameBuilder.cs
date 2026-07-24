@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using StarterAssets;
 using TMPro;
 using UnityEditor;
@@ -11,6 +12,8 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
 public static class GuardianMistiGameBuilder
@@ -19,7 +22,7 @@ public static class GuardianMistiGameBuilder
     private static readonly Color Navy = new(0.025f, .07f, .12f, 1);
     private static readonly Color Cyan = new(.05f, .7f, .82f, 1);
     private static readonly Color Orange = new(1f, .42f, .08f, 1);
-    private static Material floorMat, wallMat, accentMat, dangerMat, safeMat;
+    private static Material floorMat, wallMat, accentMat, dangerMat, safeMat, rockMat, metalMat, emissiveMat, darkMat, vfxMat;
     private static InventoryItemDefinition backpack, radio, key;
 
     [MenuItem("Guardian Misti/Build Complete Game")]
@@ -27,7 +30,7 @@ public static class GuardianMistiGameBuilder
     {
         try
         {
-            EnsureFolders(); CreateMaterials(); CreateItems(); CreatePrefabs();
+            Debug.Log("[Guardian Misti] Preparing polished assets"); EnsureFolders(); CreateMaterials(); CreateVolumeProfiles(); CreateItems(); CreatePrefabs();
             BuildMainMenu(); BuildLevel(false); BuildLevel(true);
             EditorBuildSettings.scenes = new[] {
                 new EditorBuildSettingsScene("Assets/Scenes/MainMenu.unity", true),
@@ -41,7 +44,7 @@ public static class GuardianMistiGameBuilder
 
     private static void EnsureFolders()
     {
-        foreach (string path in new[]{"Assets/Editor","Assets/Scenes","Assets/Prefabs","Assets/Prefabs/Player","Assets/Prefabs/UI","Assets/Prefabs/Systems","Assets/Prefabs/Gameplay","Assets/ScriptableObjects","Assets/ScriptableObjects/Items","Assets/Art/Materials","Assets/Tests/EditMode"})
+        foreach (string path in new[]{"Assets/Editor","Assets/Scenes","Assets/Prefabs","Assets/Prefabs/Player","Assets/Prefabs/UI","Assets/Prefabs/Systems","Assets/Prefabs/Gameplay","Assets/ScriptableObjects","Assets/ScriptableObjects/Items","Assets/Art/Materials","Assets/Materials","Assets/Settings/GuardianMisti","Assets/Prefabs/Environment","Assets/Prefabs/Props","Assets/Tests/EditMode"})
         {
             if (AssetDatabase.IsValidFolder(path)) continue;
             string parent=Path.GetDirectoryName(path).Replace('\\','/'); AssetDatabase.CreateFolder(parent, Path.GetFileName(path));
@@ -54,13 +57,40 @@ public static class GuardianMistiGameBuilder
         wallMat=Mat("Assets/Art/Materials/GM_Wall.mat", new(.22f,.28f,.31f));
         accentMat=Mat("Assets/Art/Materials/GM_Accent.mat", Cyan);
         dangerMat=Mat("Assets/Art/Materials/GM_Danger.mat", Orange);
-        safeMat=Mat("Assets/Art/Materials/GM_Safe.mat", new(.1f,.8f,.32f));
+        safeMat=Mat("Assets/Art/Materials/GM_Safe.mat", new(.08f,.55f,.65f));
+        rockMat=Mat("Assets/Materials/GM_VolcanicRock.mat",new(.09f,.075f,.065f));
+        metalMat=Mat("Assets/Materials/GM_IndustrialMetal.mat",new(.18f,.21f,.22f));
+        emissiveMat=Mat("Assets/Materials/GM_EmergencyEmissive.mat",new(1f,.18f,.04f),new(2.8f,.16f,.02f));
+        darkMat=Mat("Assets/Materials/GM_DarkTrim.mat",new(.025f,.035f,.04f));
+        vfxMat=ParticleMat("Assets/Materials/GM_DustParticle.mat");
     }
-    private static Material Mat(string path, Color color)
+    private static Material Mat(string path, Color color, Color? emission=null)
     {
         var m=AssetDatabase.LoadAssetAtPath<Material>(path);
         if(m==null){ var shader=Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"); m=new Material(shader); AssetDatabase.CreateAsset(m,path); }
-        m.color=color; EditorUtility.SetDirty(m); return m;
+        m.color=color; m.SetFloat("_Smoothness",path.Contains("Metal")?.65f:.25f); if(emission.HasValue){m.EnableKeyword("_EMISSION");m.SetColor("_EmissionColor",emission.Value);} EditorUtility.SetDirty(m); return m;
+    }
+
+
+    private static Material ParticleMat(string path){var m=AssetDatabase.LoadAssetAtPath<Material>(path);if(m==null){var shader=Shader.Find("Universal Render Pipeline/Particles/Unlit");if(shader==null)throw new Exception("URP particle shader unavailable.");m=new Material(shader);AssetDatabase.CreateAsset(m,path);}m.color=new Color(.65f,.55f,.42f,.18f);EditorUtility.SetDirty(m);return m;}
+
+    private static void CreateVolumeProfiles()
+    {
+        VolumeProfile("MainMenuVolume",.18f,-8f,new Color(.75f,.88f,1f),.22f);
+        VolumeProfile("Level01Volume",.22f,-5f,new Color(1f,.82f,.72f),.18f);
+        VolumeProfile("Level02Volume",.30f,-10f,new Color(.82f,.86f,1f),.24f);
+    }
+    private static VolumeProfile VolumeProfile(string name,float bloom,float temperature,Color filter,float vignette)
+    {
+        string path=$"Assets/Settings/GuardianMisti/{name}.asset";var profile=AssetDatabase.LoadAssetAtPath<VolumeProfile>(path);
+        if(profile==null){profile=ScriptableObject.CreateInstance<VolumeProfile>();AssetDatabase.CreateAsset(profile,path);}
+        foreach(var c in profile.components.ToArray())profile.Remove(c.GetType());
+        var tone=profile.Add<Tonemapping>();tone.mode.Override(TonemappingMode.ACES);
+        var color=profile.Add<ColorAdjustments>();color.postExposure.Override(.1f);color.contrast.Override(12f);color.colorFilter.Override(filter);
+        var white=profile.Add<WhiteBalance>();white.temperature.Override(temperature);
+        var b=profile.Add<Bloom>();b.intensity.Override(bloom);b.threshold.Override(1.1f);
+        var v=profile.Add<Vignette>();v.intensity.Override(vignette);v.smoothness.Override(.45f);
+        EditorUtility.SetDirty(profile);return profile;
     }
 
     private static void CreateItems()
@@ -83,22 +113,26 @@ public static class GuardianMistiGameBuilder
         SavePrefab(PlayerObject(),"Assets/Prefabs/Player/GameplayPlayer.prefab");
         SavePrefab(HudObject(),"Assets/Prefabs/UI/GameplayHUD.prefab");
         var systems=new GameObject("GameplaySystems"); systems.AddComponent<SceneLoader>(); systems.AddComponent<GameplayCursorController>(); SavePrefab(systems,"Assets/Prefabs/Systems/GameplaySystems.prefab");
-        var door=Cube("InteractableDoor",Vector3.zero,new(1.8f,2.8f,.22f),accentMat);door.AddComponent<DoorController>();SavePrefab(door,"Assets/Prefabs/Gameplay/InteractableDoor.prefab");
-        var collectible=Cube("CollectibleItem",Vector3.zero,new(.7f,.7f,.7f),dangerMat);collectible.AddComponent<CollectibleItemController>();SavePrefab(collectible,"Assets/Prefabs/Gameplay/CollectibleItem.prefab");
-        var exit=Cube("LevelExit",Vector3.zero,new(3,2,.3f),safeMat);exit.GetComponent<BoxCollider>().isTrigger=true;exit.AddComponent<LevelExitController>();SavePrefab(exit,"Assets/Prefabs/Gameplay/LevelExit.prefab");
-        var zone=Cube("SafeZone",Vector3.zero,new(5,.2f,5),safeMat);zone.GetComponent<BoxCollider>().isTrigger=true;zone.AddComponent<SafeZoneController>();SavePrefab(zone,"Assets/Prefabs/Gameplay/SafeZone.prefab");
+        var door=ComposedDoor("InteractableDoor",Vector3.zero);door.AddComponent<DoorController>();SavePrefab(door,"Assets/Prefabs/Gameplay/InteractableDoor.prefab");
+        var collectible=BackpackModel("CollectibleItem",Vector3.zero);collectible.AddComponent<CollectibleItemController>();SavePrefab(collectible,"Assets/Prefabs/Gameplay/CollectibleItem.prefab");
+        var exit=TriggerMarker("LevelExit",Vector3.zero,new Vector3(3,2,.3f));Sign("ExitVisual",new Vector3(0,1,0),safeMat).transform.SetParent(exit.transform);exit.AddComponent<LevelExitController>();SavePrefab(exit,"Assets/Prefabs/Gameplay/LevelExit.prefab");
+        var zone=TriggerMarker("SafeZone",Vector3.zero,new Vector3(5,2,5));SafeZoneVisual(zone.transform,new Vector3(0,-1,0));zone.AddComponent<SafeZoneController>();SavePrefab(zone,"Assets/Prefabs/Gameplay/SafeZone.prefab");
+        SavePrefab(TerminalModel("EvacuationTerminal",Vector3.zero),"Assets/Prefabs/Gameplay/EvacuationTerminal.prefab");
+        SavePrefab(BeaconModel("EmergencyBeacon",Vector3.zero),"Assets/Prefabs/Gameplay/EmergencyBeacon.prefab");
+        SavePrefab(BackpackModel("EmergencyBackpack",Vector3.zero),"Assets/Prefabs/Props/EmergencyBackpack.prefab");SavePrefab(RadioModel("EmergencyRadio",Vector3.zero),"Assets/Prefabs/Props/EmergencyRadio.prefab");SavePrefab(KeyModel("AccessKey",Vector3.zero),"Assets/Prefabs/Props/AccessKey.prefab");
+        var shelter=Imported("Assets/StarterAssets/Environment/Prefabs/Structure_Prefab.prefab",null,Vector3.zero,Vector3.one);shelter.name="FacilityModule";SavePrefab(shelter,"Assets/Prefabs/Environment/FacilityModule.prefab");
     }
     private static void SavePrefab(GameObject go,string path){PrefabUtility.SaveAsPrefabAsset(go,path);UnityEngine.Object.DestroyImmediate(go);}
 
     private static GameObject PlayerObject()
     {
-        var player=new GameObject("GameplayPlayer");player.tag="Player";player.AddComponent<CharacterController>();
+        var player=new GameObject("GameplayPlayer");player.tag="Player";var cc=player.AddComponent<CharacterController>();cc.center=new Vector3(0,1,0);cc.height=2f;cc.radius=.38f;cc.skinWidth=.08f;cc.stepOffset=.32f;cc.slopeLimit=48f;
         var inputs=player.AddComponent<StarterAssetsInputs>(); var pi=player.AddComponent<PlayerInput>();
         pi.actions=AssetDatabase.LoadAssetAtPath<InputActionAsset>("Assets/StarterAssets/InputSystem/StarterAssets.inputactions");pi.defaultActionMap="Player";pi.notificationBehavior=PlayerNotifications.SendMessages;
         var target=new GameObject("CameraRoot");target.transform.SetParent(player.transform);target.transform.localPosition=new Vector3(0,1.65f,0);
-        var camGo=new GameObject("Main Camera");camGo.tag="MainCamera";camGo.transform.SetParent(target.transform);camGo.transform.localPosition=Vector3.zero;var cam=camGo.AddComponent<Camera>();camGo.AddComponent<AudioListener>();
+        var camGo=new GameObject("Main Camera");camGo.tag="MainCamera";camGo.transform.SetParent(target.transform);camGo.transform.localPosition=Vector3.zero;var cam=camGo.AddComponent<Camera>();cam.fieldOfView=72f;cam.nearClipPlane=.08f;cam.farClipPlane=350f;camGo.AddComponent<AudioListener>();
         var fpc=player.AddComponent<FirstPersonController>();fpc.CinemachineCameraTarget=target;fpc.GroundLayers=~0;
-        player.AddComponent<InteractionSystem>(); return player;
+        var interaction=player.AddComponent<InteractionSystem>();var state=player.AddComponent<GameplayInputController>();Set(state,"playerInput",pi);Set(state,"movement",fpc);Set(state,"starterInputs",inputs);Set(state,"interaction",interaction); return player;
     }
 
     private static GameObject HudObject()
@@ -115,7 +149,7 @@ public static class GuardianMistiGameBuilder
 
     private static void BuildMainMenu()
     {
-        NewScene(); var cam=new GameObject("Main Camera");cam.tag="MainCamera";cam.AddComponent<Camera>().backgroundColor=Navy;cam.AddComponent<AudioListener>();
+        PrepareScene("Assets/Scenes/MainMenu.unity"); var generated=new GameObject("Generated_GuardianMisti"); var cam=new GameObject("Main Camera");cam.transform.SetParent(generated.transform);cam.transform.position=new Vector3(0,4,-14);cam.transform.rotation=Quaternion.Euler(8,0,0);cam.tag="MainCamera";var menuCam=cam.AddComponent<Camera>();menuCam.backgroundColor=Navy;menuCam.fieldOfView=58;cam.AddComponent<AudioListener>();AddVolume(generated.transform,"MainMenuVolume");CreateMenuBackdrop(generated.transform);
         EventSystem(); var app=new GameObject("App");var loader=app.AddComponent<SceneLoader>();var menu=app.AddComponent<MainMenuController>();Set(menu,"sceneLoader",loader);
         var canvas=CanvasRoot("Canvas");ImageObj("Background",canvas.transform,new Vector2(.5f,.5f),new Vector2(1920,1080),Navy);
         Text("Title",canvas.transform,"GUARDIAN MISTI",56,new Vector2(.5f,.78f),new Vector2(1100,100),Color.white,FontStyles.Bold);
@@ -124,28 +158,28 @@ public static class GuardianMistiGameBuilder
         var instructions=Text("Instructions",canvas.transform,"WASD: movimiento   •   Mouse: cámara   •   E: interactuar   •   Esc: pausa",20,new Vector2(.5f,.31f),new Vector2(1000,70),Color.white);
         Set(menu,"instructionsPanel",instructions.gameObject);
         ButtonObj("InstructionsButton",canvas.transform,"INSTRUCCIONES",new Vector2(.5f,.42f),menu.ToggleInstructions);
-        ButtonObj("ExitButton",canvas.transform,"SALIR",new Vector2(.5f,.22f),menu.QuitGame); instructions.gameObject.SetActive(false);
+        ButtonObj("ExitButton",canvas.transform,"SALIR",new Vector2(.5f,.22f),menu.QuitGame); instructions.gameObject.SetActive(false); ConsolidateGenerated(generated);
         SaveScene("Assets/Scenes/MainMenu.unity");
     }
 
     private static void BuildLevel(bool level2)
     {
-        NewScene(); string sceneName=level2?"Level02":"Level01";
-        RenderSettings.ambientLight=new Color(.28f,.32f,.38f);RenderSettings.ambientMode=UnityEngine.Rendering.AmbientMode.Flat;
-        var light=new GameObject("Directional Light");var dl=light.AddComponent<Light>();dl.type=LightType.Directional;dl.intensity=1.25f;light.transform.rotation=Quaternion.Euler(48,-28,0);
-        Cube("Ground",new Vector3(0,-.25f,10),new Vector3(18,.5f,28),floorMat);
-        Cube("LeftWall",new Vector3(-9,2.2f,10),new Vector3(.4f,4.5f,28),wallMat);Cube("RightWall",new Vector3(9,2.2f,10),new Vector3(.4f,4.5f,28),wallMat);
+        string sceneName=level2?"Level02":"Level01";PrepareScene($"Assets/Scenes/{sceneName}.unity");var generated=new GameObject("Generated_GuardianMisti");
+        RenderSettings.ambientLight=level2?new Color(.22f,.24f,.27f):new Color(.30f,.28f,.26f);RenderSettings.ambientMode=UnityEngine.Rendering.AmbientMode.Flat;RenderSettings.fog=true;RenderSettings.fogColor=level2?new Color(.28f,.25f,.22f):new Color(.16f,.17f,.18f);RenderSettings.fogDensity=level2?.012f:.006f;
+        var light=new GameObject("Directional Light");light.transform.SetParent(generated.transform);var dl=light.AddComponent<Light>();dl.type=LightType.Directional;dl.intensity=level2?1.05f:1.2f;dl.shadows=LightShadows.Soft;light.transform.rotation=Quaternion.Euler(48,-28,0);
+        AddVolume(generated.transform,level2?"Level02Volume":"Level01Volume");
+        BuildEnvironment(generated.transform,level2);
         var sceneLoader=new GameObject("App").AddComponent<SceneLoader>();new GameObject("GameplayCursorController").AddComponent<GameplayCursorController>();
-        EventSystem(); var player=PlayerObject();player.transform.position=new Vector3(0,1,0);var fpc=player.GetComponent<FirstPersonController>();var interaction=player.GetComponent<InteractionSystem>();var inputs=player.GetComponent<StarterAssetsInputs>();var camera=player.GetComponentInChildren<Camera>();
+        EventSystem(); var player=PlayerObject();player.transform.position=new Vector3(0,.08f,0);var fpc=player.GetComponent<FirstPersonController>();var interaction=player.GetComponent<InteractionSystem>();var inputs=player.GetComponent<StarterAssetsInputs>();var camera=player.GetComponentInChildren<Camera>();
         var canvas=BuildGameplayHud(out var objectiveUI,out var inventoryUI,out var notificationUI,out var interactionUI,out var pausePanel,out var completionPanel,out var completionUI,out var completionController);
         Set(interaction,"playerCamera",camera);Set(interaction,"interactionUIController",interactionUI);
         var managers=new GameObject("GameplaySystems");var inventory=managers.AddComponent<InventoryManager>();Set(inventory,"inventoryUI",inventoryUI);Set(inventory,"notificationUI",notificationUI);
         var objectives=managers.AddComponent<ObjectivesManager>();Set(objectives,"objectiveUI",objectiveUI);SetObjectives(objectives,level2);
-        var pause=managers.AddComponent<PauseController>();Set(pause,"pausePanel",pausePanel);Set(pause,"sceneLoader",sceneLoader);Set(pause,"gameplayBehaviours",new Behaviour[]{fpc,interaction});Set(pause,"starterInputs",inputs);
-        Set(completionController,"sceneLoader",sceneLoader);Set(completionController,"gameplayBehaviours",new Behaviour[]{fpc,interaction});Set(completionController,"pauseController",pause);Set(completionController,"starterInputs",inputs);
-        WirePauseButtons(pausePanel,pause);WireCompletionButtons(completionPanel,completionController);
+        var inputController=player.GetComponent<GameplayInputController>();var pause=managers.AddComponent<PauseController>();Set(pause,"pausePanel",pausePanel);Set(pause,"sceneLoader",sceneLoader);Set(pause,"inputController",inputController);
+        Set(completionController,"sceneLoader",sceneLoader);Set(completionController,"inputController",inputController);Set(completionController,"pauseController",pause);
+        WirePauseButtons(pausePanel,pause);WireCompletionButtons(completionPanel,completionController);AddSettings(pausePanel,fpc);
         if(level2) PopulateLevel02(objectives,inventory,notificationUI,completionUI); else PopulateLevel01(objectives,inventory,notificationUI,sceneLoader);
-        pausePanel.SetActive(false);completionPanel.SetActive(false);SaveScene($"Assets/Scenes/{sceneName}.unity");
+        pausePanel.SetActive(false);completionPanel.SetActive(false);ConsolidateGenerated(generated);SaveScene($"Assets/Scenes/{sceneName}.unity");
     }
 
     private static Canvas BuildGameplayHud(out ObjectiveUI objectiveUI,out InventoryUI inventoryUI,out NotificationUI notificationUI,out InteractionUIController interactionUI,out GameObject pause,out GameObject completion,out GameCompletionUI completionUI,out GameCompletionController completionController)
@@ -163,19 +197,40 @@ public static class GuardianMistiGameBuilder
 
     private static void PopulateLevel01(ObjectivesManager om,InventoryManager im,NotificationUI note,SceneLoader loader)
     {
-        var door=Cube("InitialDoor",new Vector3(0,1.4f,4),new Vector3(2.2f,2.8f,.25f),accentMat);var dc=door.AddComponent<DoorController>();Set(dc,"objectiveId",GameIds.Level01ExitRoom);
-        var item=Cube("EmergencyBackpack",new Vector3(-2, .5f,8),new Vector3(.8f,1,.45f),dangerMat);var cc=item.AddComponent<CollectibleItemController>();Set(cc,"definition",backpack);Set(cc,"objectiveId",GameIds.Level01CollectBackpack);
-        var terminal=Cube("EvacuationTerminal",new Vector3(2,1,12),new Vector3(1,2,.7f),accentMat);var tc=terminal.AddComponent<EvacuationTerminalController>();Set(tc,"notificationUI",note);Set(tc,"statusRenderer",terminal.GetComponent<Renderer>());
-        var exit=Cube("LevelExit",new Vector3(0,1,17),new Vector3(5,2,.4f),safeMat);exit.GetComponent<BoxCollider>().isTrigger=true;var ec=exit.AddComponent<LevelExitController>();Set(ec,"sceneLoader",loader);Set(ec,"objectivesManager",om);Set(ec,"objectiveId",GameIds.Level01ReachExit);
-        TextWorld("EVACUACIÓN",new Vector3(0,2.8f,16.7f),Color.green);
+        var door=ComposedDoor("InitialDoor",new Vector3(0,1.45f,4));var dc=door.AddComponent<DoorController>();Set(dc,"objectiveId",GameIds.Level01ExitRoom);
+        var item=BackpackModel("EmergencyBackpack",new Vector3(-2,.55f,8));var cc=item.AddComponent<CollectibleItemController>();Set(cc,"definition",backpack);Set(cc,"objectiveId",GameIds.Level01CollectBackpack);
+        var terminal=TerminalModel("EvacuationTerminal",new Vector3(2,0,12));var tc=terminal.AddComponent<EvacuationTerminalController>();Set(tc,"notificationUI",note);Set(tc,"statusRenderer",Find(terminal.transform,"StatusLight").GetComponent<Renderer>());
+        var exit=TriggerMarker("LevelExit",new Vector3(0,1,17),new Vector3(5,2,.6f));var ec=exit.AddComponent<LevelExitController>();Set(ec,"sceneLoader",loader);Set(ec,"objectivesManager",om);Set(ec,"objectiveId",GameIds.Level01ReachExit);
+        Sign("RUTA DE EVACUACIÓN",new Vector3(0,2.8f,16.5f),safeMat);Dust(new Vector3(0,2,10),new Vector3(8,3,18),25);
     }
     private static void PopulateLevel02(ObjectivesManager om,InventoryManager im,NotificationUI note,GameCompletionUI completion)
     {
-        var r=Cube("EmergencyRadio",new Vector3(-3,.55f,5),new Vector3(.7f,.7f,.45f),dangerMat);var rc=r.AddComponent<CollectibleItemController>();Set(rc,"definition",radio);Set(rc,"objectiveId",GameIds.Level02CollectRadio);
-        var k=Cube("AccessKey",new Vector3(3,.5f,9),new Vector3(.5f,.2f,.9f),accentMat);var kc=k.AddComponent<CollectibleItemController>();Set(kc,"definition",key);Set(kc,"objectiveId",GameIds.Level02CollectAccessKey);
-        var b=Cube("EmergencyBeacon",new Vector3(0,1.5f,13),new Vector3(1.3f,3,1.3f),dangerMat);var bc=b.AddComponent<EmergencyBeaconController>();Set(bc,"notificationUI",note);Set(bc,"statusRenderer",b.GetComponent<Renderer>());
-        var z=Cube("SafeZone",new Vector3(0,.08f,19),new Vector3(7,.16f,5),safeMat);z.GetComponent<BoxCollider>().isTrigger=true;var sc=z.AddComponent<SafeZoneController>();Set(sc,"objectivesManager",om);Set(sc,"completionUI",completion);TextWorld("ZONA SEGURA",new Vector3(0,2.5f,19),Color.green);
+        var r=RadioModel("EmergencyRadio",new Vector3(-3,.65f,5));var rc=r.AddComponent<CollectibleItemController>();Set(rc,"definition",radio);Set(rc,"objectiveId",GameIds.Level02CollectRadio);
+        var k=KeyModel("AccessKey",new Vector3(3,.75f,9));var kc=k.AddComponent<CollectibleItemController>();Set(kc,"definition",key);Set(kc,"objectiveId",GameIds.Level02CollectAccessKey);
+        var b=BeaconModel("EmergencyBeacon",new Vector3(0,0,13));var bc=b.AddComponent<EmergencyBeaconController>();Set(bc,"notificationUI",note);Set(bc,"statusRenderer",Find(b.transform,"StatusLight").GetComponent<Renderer>());
+        var z=TriggerMarker("SafeZone",new Vector3(0,1,19),new Vector3(7,2,5));var sc=z.AddComponent<SafeZoneController>();Set(sc,"objectivesManager",om);Set(sc,"completionUI",completion);SafeZoneVisual(z.transform,new Vector3(0,-1,0));Sign("ZONA SEGURA / RESCATE",new Vector3(0,3,20.5f),safeMat);Dust(new Vector3(0,2,11),new Vector3(14,5,25),55);
     }
+
+    private static void AddVolume(Transform parent,string name){var g=new GameObject("GlobalVolume");g.transform.SetParent(parent);var v=g.AddComponent<Volume>();v.isGlobal=true;v.priority=1;v.sharedProfile=AssetDatabase.LoadAssetAtPath<VolumeProfile>($"Assets/Settings/GuardianMisti/{name}.asset");}
+    private static void CreateMenuBackdrop(Transform root){for(int i=0;i<7;i++){var rock=GameObject.CreatePrimitive(PrimitiveType.Sphere);rock.name="VolcanicSilhouette";rock.transform.SetParent(root);rock.transform.position=new Vector3((i-3)*3,-2,9+Mathf.Abs(i-3));rock.transform.localScale=new Vector3(5,3+i%2,4);rock.GetComponent<Renderer>().sharedMaterial=rockMat;}var beacon=BeaconModel("MenuBeacon",new Vector3(5,-1,5));beacon.transform.SetParent(root);}
+    private static void BuildEnvironment(Transform root,bool level2){var ground=Cube("Collision_Ground",new Vector3(0,-.25f,10),new Vector3(18,.5f,28),level2?rockMat:floorMat);ground.transform.SetParent(root);for(int side=-1;side<=1;side+=2){var wall=Cube("StructureWall",new Vector3(side*8.5f,2.2f,10),new Vector3(.45f,4.5f,28),level2?rockMat:wallMat);wall.transform.SetParent(root);}if(level2){for(int i=0;i<16;i++){var r=GameObject.CreatePrimitive(PrimitiveType.Sphere);r.name="VolcanicRock";r.transform.SetParent(root);r.transform.position=new Vector3((i%2==0?-1:1)*(5.5f+(i%3)),.3f,1+i*1.35f);r.transform.localScale=new Vector3(1.2f+i%3,.8f+(i%2),1.5f);r.GetComponent<Renderer>().sharedMaterial=rockMat;}for(int i=0;i<6;i++)RoutePost(root,new Vector3((i%2==0?-1:1)*4,.8f,3+i*3));}else{for(int section=0;section<5;section++){float z=2+section*4;var beam=Cube("FacilityOverheadBeam",new Vector3(0,3.8f,z),new Vector3(16,.22f,.35f),metalMat);beam.transform.SetParent(root);for(int side=-1;side<=1;side+=2){var column=Cube("FacilitySupport",new Vector3(side*7.6f,1.8f,z),new Vector3(.35f,3.6f,.35f),metalMat);column.transform.SetParent(root);}}for(int i=0;i<6;i++){var crate=Imported("Assets/StarterAssets/Environment/Prefabs/Box_350x250x200_Prefab.prefab",root,new Vector3((i%2==0?-1:1)*5,.7f,3+i*2.2f),new Vector3(.45f,.45f,.45f));crate.name="EmergencySupplyCrate";RemoveColliders(crate);}for(int i=0;i<5;i++)EmergencyLight(root,new Vector3(i%2==0?-7.7f:7.7f,3.2f,3+i*4));} }
+    private static GameObject Imported(string path,Transform parent,Vector3 pos,Vector3 scale){var prefab=AssetDatabase.LoadAssetAtPath<GameObject>(path);if(prefab==null)throw new Exception("Required imported asset unavailable: "+path);var g=(GameObject)PrefabUtility.InstantiatePrefab(prefab);PrefabUtility.UnpackPrefabInstance(g,PrefabUnpackMode.Completely,InteractionMode.AutomatedAction);g.transform.SetParent(parent);g.transform.position=pos;g.transform.localScale=scale;foreach(var r in g.GetComponentsInChildren<Renderer>()){var mats=r.sharedMaterials;for(int i=0;i<mats.Length;i++)if(mats[i]==null)mats[i]=wallMat;r.sharedMaterials=mats;}return g;}
+    private static void RemoveColliders(GameObject root){foreach(var c in root.GetComponentsInChildren<Collider>())UnityEngine.Object.DestroyImmediate(c);}
+    private static void EmergencyLight(Transform root,Vector3 pos){var g=new GameObject("EmergencyLight");g.transform.SetParent(root);g.transform.position=pos;var l=g.AddComponent<Light>();l.type=LightType.Point;l.range=6;l.intensity=2;l.color=new Color(1,.18f,.05f);l.shadows=LightShadows.None;var lens=GameObject.CreatePrimitive(PrimitiveType.Sphere);lens.name="Lens";lens.transform.SetParent(g.transform);lens.transform.localScale=Vector3.one*.22f;lens.GetComponent<Renderer>().sharedMaterial=emissiveMat;UnityEngine.Object.DestroyImmediate(lens.GetComponent<Collider>());}
+    private static void RoutePost(Transform root,Vector3 pos){var g=GameObject.CreatePrimitive(PrimitiveType.Cylinder);g.name="EvacuationRoutePost";g.transform.SetParent(root);g.transform.position=pos;g.transform.localScale=new Vector3(.12f,.8f,.12f);g.GetComponent<Renderer>().sharedMaterial=metalMat;var cap=GameObject.CreatePrimitive(PrimitiveType.Sphere);cap.transform.SetParent(g.transform);cap.transform.localPosition=new Vector3(0,1,0);cap.transform.localScale=new Vector3(2, .3f,2);cap.GetComponent<Renderer>().sharedMaterial=safeMat;UnityEngine.Object.DestroyImmediate(cap.GetComponent<Collider>());}
+    private static GameObject ComposedDoor(string name,Vector3 pos){var root=new GameObject(name);root.transform.position=pos;var col=root.AddComponent<BoxCollider>();col.size=new Vector3(2.2f,2.8f,.25f);var panel=Cube("ReinforcedPanel",Vector3.zero,new Vector3(2.1f,2.7f,.18f),metalMat);panel.transform.SetParent(root.transform,false);for(int i=-1;i<=1;i+=2){var rail=Cube("DoorRail",new Vector3(i*.85f,0,-.13f),new Vector3(.13f,2.65f,.12f),dangerMat);rail.transform.SetParent(root.transform,false);}var wheel=GameObject.CreatePrimitive(PrimitiveType.Cylinder);wheel.name="EmergencyHandle";wheel.transform.SetParent(root.transform,false);wheel.transform.localPosition=new Vector3(.55f,0,-.2f);wheel.transform.localRotation=Quaternion.Euler(90,0,0);wheel.transform.localScale=new Vector3(.32f,.08f,.32f);wheel.GetComponent<Renderer>().sharedMaterial=emissiveMat;UnityEngine.Object.DestroyImmediate(wheel.GetComponent<Collider>());return root;}
+    private static GameObject BackpackModel(string name,Vector3 pos){var root=new GameObject(name);root.transform.position=pos;root.AddComponent<BoxCollider>().size=new Vector3(.8f,1,.5f);var bag=Cube("CanvasBag",Vector3.zero,new Vector3(.72f,.9f,.42f),dangerMat);bag.transform.SetParent(root.transform,false);for(int i=-1;i<=1;i+=2){var strap=Cube("Strap",new Vector3(i*.22f,0,-.24f),new Vector3(.1f,.82f,.06f),darkMat);strap.transform.SetParent(root.transform,false);}SignChild(root.transform,"EMERGENCIA",new Vector3(0,.05f,-.26f));return root;}
+    private static GameObject RadioModel(string name,Vector3 pos){var root=new GameObject(name);root.transform.position=pos;root.AddComponent<BoxCollider>().size=new Vector3(.65f,.8f,.35f);var body=Cube("RadioBody",Vector3.zero,new Vector3(.6f,.72f,.3f),darkMat);body.transform.SetParent(root.transform,false);var screen=Cube("RadioScreen",new Vector3(0,.12f,-.18f),new Vector3(.38f,.2f,.04f),accentMat);screen.transform.SetParent(root.transform,false);var antenna=GameObject.CreatePrimitive(PrimitiveType.Cylinder);antenna.transform.SetParent(root.transform,false);antenna.transform.localPosition=new Vector3(.2f,.7f,0);antenna.transform.localScale=new Vector3(.035f,.45f,.035f);antenna.GetComponent<Renderer>().sharedMaterial=metalMat;UnityEngine.Object.DestroyImmediate(antenna.GetComponent<Collider>());return root;}
+    private static GameObject KeyModel(string name,Vector3 pos){var root=new GameObject(name);root.transform.position=pos;root.AddComponent<BoxCollider>().size=new Vector3(.7f,.25f,.9f);var card=Cube("AccessCard",Vector3.zero,new Vector3(.65f,.12f,.85f),accentMat);card.transform.SetParent(root.transform,false);var stripe=Cube("AccessStripe",new Vector3(0,.08f,.18f),new Vector3(.5f,.03f,.12f),emissiveMat);stripe.transform.SetParent(root.transform,false);return root;}
+    private static GameObject TerminalModel(string name,Vector3 pos){var root=new GameObject(name);root.transform.position=pos;root.AddComponent<BoxCollider>().center=new Vector3(0,1,0);root.GetComponent<BoxCollider>().size=new Vector3(1.1f,2,.8f);var stand=Cube("TerminalHousing",new Vector3(0,.8f,0),new Vector3(1,1.6f,.7f),metalMat);stand.transform.SetParent(root.transform,false);var screen=Cube("StatusLight",new Vector3(0,1.25f,-.38f),new Vector3(.72f,.55f,.05f),accentMat);screen.transform.SetParent(root.transform,false);SignChild(root.transform,"EVACUACIÓN",new Vector3(0,.55f,-.39f));return root;}
+    private static GameObject BeaconModel(string name,Vector3 pos){var root=new GameObject(name);root.transform.position=pos;root.AddComponent<CapsuleCollider>().center=new Vector3(0,1.5f,0);root.GetComponent<CapsuleCollider>().height=3;root.GetComponent<CapsuleCollider>().radius=.65f;var mast=GameObject.CreatePrimitive(PrimitiveType.Cylinder);mast.name="BeaconMast";mast.transform.SetParent(root.transform,false);mast.transform.localPosition=new Vector3(0,1.4f,0);mast.transform.localScale=new Vector3(.35f,1.4f,.35f);mast.GetComponent<Renderer>().sharedMaterial=metalMat;UnityEngine.Object.DestroyImmediate(mast.GetComponent<Collider>());var light=GameObject.CreatePrimitive(PrimitiveType.Sphere);light.name="StatusLight";light.transform.SetParent(root.transform,false);light.transform.localPosition=new Vector3(0,2.9f,0);light.transform.localScale=Vector3.one*.75f;light.GetComponent<Renderer>().sharedMaterial=emissiveMat;UnityEngine.Object.DestroyImmediate(light.GetComponent<Collider>());var glow=light.AddComponent<Light>();glow.type=LightType.Point;glow.range=12;glow.intensity=2.5f;glow.color=new Color(.1f,.75f,1f);glow.shadows=LightShadows.None;for(int i=0;i<3;i++){var leg=Cube("Support",new Vector3((i-1)*.55f,.35f,0),new Vector3(.16f,.7f,.16f),darkMat);leg.transform.SetParent(root.transform,false);}return root;}
+    private static GameObject TriggerMarker(string name,Vector3 pos,Vector3 size){var g=new GameObject(name);g.transform.position=pos;var c=g.AddComponent<BoxCollider>();c.size=size;c.isTrigger=true;return g;}
+    private static void SafeZoneVisual(Transform root,Vector3 local){var pad=GameObject.CreatePrimitive(PrimitiveType.Cylinder);pad.name="RescuePlatform";pad.transform.SetParent(root,false);pad.transform.localPosition=local;pad.transform.localScale=new Vector3(3.2f,.12f,3.2f);pad.GetComponent<Renderer>().sharedMaterial=safeMat;UnityEngine.Object.DestroyImmediate(pad.GetComponent<Collider>());for(int i=0;i<8;i++){float a=i*Mathf.PI/4;RoutePost(root,new Vector3(Mathf.Cos(a)*2.7f,0,Mathf.Sin(a)*2.7f)+root.position);}}
+    private static GameObject Sign(string text,Vector3 pos,Material mat){var g=Cube("Sign_"+text,pos,new Vector3(4,.8f,.12f),mat);SignChild(g.transform,text,new Vector3(0,0,-.56f));return g;}
+    private static void SignChild(Transform parent,string text,Vector3 local){var g=new GameObject("Label");g.transform.SetParent(parent,false);g.transform.localPosition=local;g.transform.localRotation=Quaternion.identity;var t=g.AddComponent<TextMeshPro>();t.text=text;t.fontSize=2;t.alignment=TextAlignmentOptions.Center;t.color=Color.white;}
+    private static void Dust(Vector3 pos,Vector3 box,int count){var g=new GameObject("AtmosphericDust");g.transform.position=pos;var ps=g.AddComponent<ParticleSystem>();var main=ps.main;main.maxParticles=count;main.startLifetime=8;main.startSpeed=.12f;main.startSize=.05f;main.startColor=new Color(.7f,.62f,.5f,.22f);var emission=ps.emission;emission.rateOverTime=count/8f;var shape=ps.shape;shape.shapeType=ParticleSystemShapeType.Box;shape.scale=box;g.GetComponent<ParticleSystemRenderer>().sharedMaterial=vfxMat;}
+    private static void AddSettings(GameObject panel,FirstPersonController fpc){var sLabel=Text("SensitivityLabel",panel.transform,"SENSIBILIDAD",15,new Vector2(.35f,.14f),new Vector2(220,30),Color.white);var sens=SliderObj("SensitivitySlider",panel.transform,new Vector2(.55f,.14f),.25f,3f,1f);var vLabel=Text("VolumeLabel",panel.transform,"VOLUMEN",15,new Vector2(.35f,.09f),new Vector2(220,30),Color.white);var vol=SliderObj("VolumeSlider",panel.transform,new Vector2(.55f,.09f),0,1,1);var settings=panel.AddComponent<GameplaySettingsController>();Set(settings,"controller",fpc);Set(settings,"sensitivitySlider",sens);Set(settings,"volumeSlider",vol);}
+    private static Slider SliderObj(string name,Transform parent,Vector2 anchor,float min,float max,float value){var bg=ImageObj(name,parent,anchor,new Vector2(260,18),new Color(.08f,.12f,.15f,1));var fill=ImageObj("Fill",bg.transform,new Vector2(.5f,.5f),new Vector2(240,10),Cyan);var handle=ImageObj("Handle",bg.transform,new Vector2(.5f,.5f),new Vector2(22,22),Color.white);var slider=bg.AddComponent<Slider>();slider.fillRect=(RectTransform)fill.transform;slider.handleRect=(RectTransform)handle.transform;slider.minValue=min;slider.maxValue=max;slider.value=value;return slider;}
 
     private static void SetObjectives(ObjectivesManager manager,bool l2)
     {
@@ -186,7 +241,9 @@ public static class GuardianMistiGameBuilder
     private static void WireCompletionButtons(GameObject p,GameCompletionController c){Wire(p,"RestartButton",c.RestartCurrentLevel);Wire(p,"MenuButton",c.ReturnToMainMenu);Wire(p,"ExitButton",c.QuitGame);}
     private static void Wire(GameObject root,string name,UnityEngine.Events.UnityAction action){var b=Find(root.transform,name).GetComponent<Button>();b.onClick.RemoveAllListeners();UnityEventTools.AddPersistentListener(b.onClick,action);}
 
-    private static void NewScene(){EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);}
+    private static void PrepareScene(string path){if(File.Exists(path))EditorSceneManager.OpenScene(path,OpenSceneMode.Single);else EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);foreach(var root in SceneManager.GetActiveScene().GetRootGameObjects()){if(root.name=="Generated_GuardianMisti"||IsLegacyGeneratedRoot(root.name))UnityEngine.Object.DestroyImmediate(root);}}
+    private static bool IsLegacyGeneratedRoot(string n)=>new[]{"Main Camera","EventSystem","App","Canvas","GameplayHUD","GameplayPlayer","GameplaySystems","GameplayCursorController","Directional Light","Ground","LeftWall","RightWall","InitialDoor","EmergencyBackpack","EvacuationTerminal","LevelExit","EmergencyRadio","AccessKey","EmergencyBeacon","SafeZone","EVACUACIÓN","ZONA SEGURA"}.Contains(n);
+    private static void ConsolidateGenerated(GameObject generated){foreach(var root in SceneManager.GetActiveScene().GetRootGameObjects())if(root!=generated)root.transform.SetParent(generated.transform,true);}
     private static void SaveScene(string path){EditorSceneManager.SaveScene(SceneManager.GetActiveScene(),path);}
     private static void EventSystem(){var e=new GameObject("EventSystem");e.AddComponent<EventSystem>();e.AddComponent<InputSystemUIInputModule>();}
     private static Canvas CanvasRoot(string name){var g=new GameObject(name);var c=g.AddComponent<Canvas>();c.renderMode=RenderMode.ScreenSpaceOverlay;var s=g.AddComponent<CanvasScaler>();s.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;s.referenceResolution=new Vector2(1920,1080);g.AddComponent<GraphicRaycaster>();return c;}
