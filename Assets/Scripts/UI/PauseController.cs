@@ -1,4 +1,3 @@
-using StarterAssets;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -6,28 +5,23 @@ public class PauseController : MonoBehaviour
 {
     [SerializeField] private GameObject pausePanel;
     [SerializeField] private SceneLoader sceneLoader;
-    [SerializeField] private Behaviour[] gameplayBehaviours;
-    [SerializeField] private StarterAssetsInputs starterInputs;
-    private bool paused;
-    public bool IsPaused => paused;
+    [SerializeField] private GameplayInputController inputController;
+    public bool IsPaused => inputController != null && inputController.State == GameplayInputState.Paused;
+
     private void Update()
     {
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) TogglePause();
     }
-    public void TogglePause() { if (paused) Resume(); else Pause(); }
+    public void TogglePause() { if (IsPaused) Resume(); else Pause(); }
     public void Pause()
     {
-        if (paused) return; paused = true; Time.timeScale = 0; SetGameplay(false); pausePanel.SetActive(true); CursorState.ApplyMenuMode();
+        if (inputController == null || inputController.State == GameplayInputState.Completed) return;
+        inputController.EnterPause(); if (pausePanel != null) pausePanel.SetActive(true);
     }
     public void Resume()
     {
-        if (!paused) return; paused = false; Time.timeScale = 1; pausePanel.SetActive(false); SetGameplay(true); CursorState.ApplyGameplayMode();
+        if (!IsPaused) return; if (pausePanel != null) pausePanel.SetActive(false); inputController.EnterGameplay();
     }
-    public void Reload() { Time.timeScale = 1; sceneLoader.ReloadCurrentScene(); }
-    public void MainMenu() { Time.timeScale = 1; sceneLoader.LoadMainMenu(); }
-    private void SetGameplay(bool enabled)
-    {
-        if (gameplayBehaviours != null) foreach (Behaviour behaviour in gameplayBehaviours) if (behaviour != null) behaviour.enabled = enabled;
-        if (starterInputs != null) { starterInputs.cursorLocked = enabled; starterInputs.cursorInputForLook = enabled; }
-    }
+    public void Reload() { Time.timeScale = 1f; sceneLoader?.ReloadCurrentScene(); }
+    public void MainMenu() { Time.timeScale = 1f; sceneLoader?.LoadMainMenu(); }
 }

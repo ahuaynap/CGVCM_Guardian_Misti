@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 1948990629934989151}
   - component: {fileID: 6566203436919134637}
   - component: {fileID: 7948895809034784781}
+  - component: {fileID: 6256273857809503166}
   m_Layer: 0
   m_Name: GameplayPlayer
   m_TagString: Player
@@ -56,12 +57,12 @@ CharacterController:
   m_Enabled: 1
   serializedVersion: 3
   m_Height: 2
-  m_Radius: 0.5
-  m_SlopeLimit: 45
-  m_StepOffset: 0.3
+  m_Radius: 0.38
+  m_SlopeLimit: 48
+  m_StepOffset: 0.32
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: 1, z: 0}
 --- !u!114 &8718554836475324020
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -158,6 +159,22 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   interactionUIController: {fileID: 0}
+--- !u!114 &6256273857809503166
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1029617408505352869}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4cd0aab64c02078babba4c6df40504dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameplayInputController
+  playerInput: {fileID: 1948990629934989151}
+  movement: {fileID: 6566203436919134637}
+  starterInputs: {fileID: 8718554836475324020}
+  interaction: {fileID: 7948895809034784781}
 --- !u!1 &3143390241303902954
 GameObject:
   m_ObjectHideFlags: 0
@@ -254,9 +271,9 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
-  far clip plane: 1000
-  field of view: 60
+  near clip plane: 0.08
+  far clip plane: 350
+  field of view: 72
   orthographic: 0
   orthographic size: 5
   m_Depth: 0
