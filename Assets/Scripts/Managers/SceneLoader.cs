@@ -3,37 +3,71 @@ using UnityEngine.SceneManagement;
 
 public class SceneLoader : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    private bool isLoading;
 
     public void LoadMainMenu()
     {
-        SceneManager.LoadScene(SceneNames.MainMenu);
+        TryLoadScene(SceneNames.MainMenu);
+    }
+
+    public void LoadLevel01()
+    {
+        TryLoadScene(SceneNames.Level01);
+    }
+
+    public void LoadLevel02()
+    {
+        TryLoadScene(SceneNames.Level02);
     }
 
     public void LoadSimulation()
     {
-        SceneManager.LoadScene(SceneNames.Simulation);
+        TryLoadScene(SceneNames.Simulation);
     }
 
     public void ReloadCurrentScene()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        Scene activeScene = SceneManager.GetActiveScene();
+        TryLoadScene(activeScene.name);
+    }
+
+    public bool TryLoadScene(GameScene scene)
+    {
+        return TryLoadScene(SceneNames.GetName(scene));
+    }
+
+    private bool TryLoadScene(string sceneName)
+    {
+        if (isLoading)
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(sceneName))
+        {
+            Debug.LogWarning("Cannot load a scene with an empty name.", this);
+            return false;
+        }
+
+        if (!Application.CanStreamedLevelBeLoaded(sceneName))
+        {
+            Debug.LogWarning(
+                $"Scene '{sceneName}' is not available in the build configuration.",
+                this);
+            return false;
+        }
+
+        isLoading = true;
+        SceneManager.LoadScene(sceneName);
+        return true;
     }
 
     public void QuitGame()
     {
-        Debug.Log("Closing Guardian");
-
+#if UNITY_EDITOR
+        Debug.Log("Quit requested. Application.Quit is ignored in the Unity Editor.", this);
+#else
         Application.Quit();
+#endif
     }
 }
