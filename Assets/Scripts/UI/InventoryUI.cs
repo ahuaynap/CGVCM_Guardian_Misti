@@ -1,32 +1,10 @@
-using TMPro;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-
 public class InventoryUI : MonoBehaviour
 {
-    [SerializeField]
-    private TextMeshProUGUI inventoryText;
-
-    [SerializeField]
-    private Image inventoryImage;
-
-    public void Refresh(InventoryItem item, int itemAmount)
-    {
-        inventoryText.text = $"x{itemAmount}";
-        
-        if(item != null )
-        {
-            inventoryImage.sprite = item.Icon;   
-        }
-    }
-
-    public void Show()
-    {
-        gameObject.SetActive(true);
-    }
-
-    public void Hide()
-    {
-        gameObject.SetActive(false);
-    }
+ [SerializeField] private InventorySlotView[] slots;
+ public void Refresh(IReadOnlyList<InventoryItem> items){foreach(var slot in slots??System.Array.Empty<InventorySlotView>()){bool obtained=false;if(items!=null)for(int i=0;i<items.Count;i++)if(items[i]?.Id==slot.ItemId){obtained=true;break;}slot.SetObtained(obtained);}}
+ public void Refresh(InventoryItem item,int itemAmount){if(item==null){Refresh((IReadOnlyList<InventoryItem>)null);return;}foreach(var slot in slots??System.Array.Empty<InventorySlotView>())if(slot.ItemId==item.Id)slot.SetObtained(true);}
+ public void Show()=>gameObject.SetActive(true);
+ public void Hide()=>gameObject.SetActive(false);
 }

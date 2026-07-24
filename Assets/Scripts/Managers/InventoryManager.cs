@@ -11,13 +11,13 @@ public class InventoryManager : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
-        inventoryUI?.Refresh(null, 0);
+        inventoryUI?.Refresh(items);
     }
     public bool AddItem(InventoryItem item)
     {
         if (item == null || item.Definition == null || string.IsNullOrWhiteSpace(item.Id)) return false;
         if (HasItem(item.Id)) return false;
-        items.Add(item); inventoryUI?.Refresh(item, items.Count); notificationUI?.Show(item); return true;
+        items.Add(item); inventoryUI?.Refresh(items); notificationUI?.Show(item); return true;
     }
     public bool HasItem(string itemId) => !string.IsNullOrWhiteSpace(itemId) && items.Exists(item => item.Id == itemId);
     public int ItemsCount => items.Count;
