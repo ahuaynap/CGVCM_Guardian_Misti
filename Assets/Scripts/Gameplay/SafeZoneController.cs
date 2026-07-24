@@ -10,6 +10,6 @@ public class SafeZoneController : MonoBehaviour
     {
         if (completed || !other.CompareTag("Player") || objectivesManager == null) return;
         completed = objectivesManager.TryCompleteObjective(objectiveId);
-        if (completed && objectivesManager.IsSimulationCompleted) completionUI?.Show();
+        if (completed && objectivesManager.IsSimulationCompleted) { SimulationSession.Instance?.StopTimer(); completionUI?.Show(); }
     }
 }

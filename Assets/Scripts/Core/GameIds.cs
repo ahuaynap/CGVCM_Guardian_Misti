@@ -3,6 +3,7 @@ public static class GameIds
     public const string EmergencyBackpack = "backpack";
     public const string EmergencyRadio = "emergency_radio";
     public const string AccessKey = "access_key";
+    public const string Level01Protect = "level01_protect";
     public const string Level01ExitRoom = "level01_exit_room";
     public const string Level01CollectBackpack = "level01_collect_backpack";
     public const string Level01ActivateEvacuation = "level01_activate_evacuation";

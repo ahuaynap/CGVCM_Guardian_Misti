@@ -24,5 +24,8 @@ public class GuardianMistiEditModeTests
     [Test] public void SceneConstantsAreStable(){Assert.AreEqual("MainMenu",SceneNames.MainMenu);Assert.AreEqual("Level01",SceneNames.Level01);Assert.AreEqual("Level02",SceneNames.Level02);}
     [Test] public void BeaconRequiresRadioAndKey(){var inv=Component<InventoryManager>();var beacon=Component<EmergencyBeaconController>();Assert.False(beacon.HasRequirements(inv));inv.AddItem(new InventoryItem(Item(GameIds.EmergencyRadio)));Assert.False(beacon.HasRequirements(inv));inv.AddItem(new InventoryItem(Item(GameIds.AccessKey)));Assert.True(beacon.HasRequirements(inv));}
     [Test] public void SceneLoaderRejectsRepeatedInvalidRequestsAndKeepsTimeScale(){var loader=Component<SceneLoader>();Time.timeScale=0;Assert.False(loader.TryLoadScene((GameScene)999));Assert.False(loader.TryLoadScene((GameScene)999));Assert.AreEqual(0,Time.timeScale);}
+    [Test] public void TimerFormattingIsStable(){Assert.AreEqual("01:05.250",SimulationSession.FormatTime(65.25f));}
+    [Test] public void ScorePenaltiesAreTransparent(){Assert.AreEqual(1000,PerformanceScoreCalculator.Calculate(90,0,0,0,0));Assert.Less(PerformanceScoreCalculator.Calculate(120,2,1,1,4),1000);Assert.AreEqual("Excelente",PerformanceScoreCalculator.Grade(950));}
+    [Test] public void EarthquakeCurveIsBounded(){var p=ScriptableObject.CreateInstance<EarthquakeProfile>();cleanup.Add(p);Assert.That(p.Evaluate(0),Is.InRange(0f,1f));Assert.That(p.Evaluate(999),Is.InRange(0f,1f));}
 }
 #endif

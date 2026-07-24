@@ -16,7 +16,7 @@ public class PauseController : MonoBehaviour
     public void Pause()
     {
         if (inputController == null || inputController.State == GameplayInputState.Completed) return;
-        inputController.EnterPause(); if (pausePanel != null) pausePanel.SetActive(true);
+        SimulationSession.Instance?.RecordPause(); inputController.EnterPause(); if (pausePanel != null) pausePanel.SetActive(true);
     }
     public void Resume()
     {

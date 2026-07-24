@@ -24,6 +24,7 @@ public class ObjectivesManager : MonoBehaviour
     public bool TryCompleteObjective(string objectiveId)
     {
         if (!IsCurrentObjective(objectiveId)) return false;
+        SimulationSession.Instance?.RecordObjective(objectiveId);
         currentObjectiveIndex++;
         if (IsSimulationCompleted) { objectiveUI?.Hide(); AllObjectivesCompleted?.Invoke(); return true; }
         objectiveUI?.Refresh(GetCurrentObjective());

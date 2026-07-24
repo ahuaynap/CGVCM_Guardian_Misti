@@ -1,6 +1,8 @@
 # Guardian Misti
 
-Guardian Misti is a short first-person emergency-preparation and survival game built with Unity 6000.5.3f1. The playable flow is `MainMenu → Level01 → Level02 → completion screen`.
+Guardian Misti is a first-person educational earthquake-response simulation built with Unity 6000.5.3f1. The playable flow is `MainMenu → Level01 → Level02 → results`.
+
+Guardian Misti is an educational simulation and is not an official emergency-response certification tool.
 
 ## Controls
 
@@ -11,7 +13,9 @@ Guardian Misti is a short first-person emergency-preparation and survival game b
 
 ## Game flow
 
-In Level01, leave the room, collect the emergency backpack, activate the evacuation terminal, and reach the exit. In Level02, collect the emergency radio and access key, activate the gated emergency beacon, and reach the safe zone. The completion screen can restart Level02, return to MainMenu, or exit.
+In Level01, complete the countdown and earthquake protection objective, then leave the room, collect the emergency backpack, activate the evacuation terminal, and reach the exit. In Level02, collect the emergency radio and access key, activate the gated emergency beacon, and reach the safe zone. The completion screen can restart Level02, return to MainMenu, or exit.
+
+The cross-scene timer starts with the earthquake and pauses with the simulation. Results include level and total times, mistakes, hazards, a transparent 1000-point score, grade and locally stored best time. Difficulty profiles (Básico, Intermedio, Avanzado) tune duration, shake and target time. Optional anonymous research JSON is written locally under `Application.persistentDataPath/GuardianMistiResearch`; it contains no personal data, performs no upload, and supports analysis of evacuation time, navigation efficiency, objective errors and visual guidance.
 
 ## Architecture
 
@@ -58,3 +62,7 @@ GPU review screenshots are generated under `Artifacts/Screenshots` with:
 ```
 
 `-nographics` must not be used for screenshots because it selects Unity's NullGfxDevice.
+
+## Known limitations
+
+The repository contains no dedicated emergency-object meshes or usable audio, so required objects are project-owned multi-part low-poly compositions and audio hooks remain null-safe. Seismic intensity is an educational animation curve, not a Richter-scale or structural-physics model.

@@ -13,9 +13,10 @@ GameObject:
   - component: {fileID: 8718554836475324020}
   - component: {fileID: 1948990629934989151}
   - component: {fileID: 6566203436919134637}
+  - component: {fileID: 6069029887582889029}
   - component: {fileID: 7948895809034784781}
   - component: {fileID: 6256273857809503166}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: GameplayPlayer
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -128,19 +129,32 @@ MonoBehaviour:
   SprintSpeed: 6
   RotationSpeed: 1
   SpeedChangeRate: 10
-  JumpHeight: 1.2
-  Gravity: -15
-  JumpTimeout: 0.1
-  FallTimeout: 0.15
+  JumpHeight: 1.05
+  Gravity: -18
+  JumpTimeout: 0.15
+  FallTimeout: 0.12
   Grounded: 1
-  GroundedOffset: -0.14
-  GroundedRadius: 0.5
+  GroundedOffset: 0.14
+  GroundedRadius: 0.28
   GroundLayers:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 1
   CinemachineCameraTarget: {fileID: 3143390241303902954}
   TopClamp: 90
   BottomClamp: -90
+--- !u!114 &6069029887582889029
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1029617408505352869}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03535e622f2720691a4e5112811852d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JumpInputGate
+  inputs: {fileID: 8718554836475324020}
 --- !u!114 &7948895809034784781
 MonoBehaviour:
   m_ObjectHideFlags: 0

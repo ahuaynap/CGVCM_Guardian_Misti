@@ -15,7 +15,7 @@ public class EmergencyBeaconController : MonoBehaviour, IInteractable
     {
         if (activated || ObjectivesManager.Instance == null || !ObjectivesManager.Instance.IsCurrentObjective(objectiveId)) return;
         if (!HasRequirements(InventoryManager.Instance))
-        { if (Time.unscaledTime < nextFailureTime) return; nextFailureTime = Time.unscaledTime + 1.5f; notificationUI?.ShowMessage("Faltan suministros", "Necesitas la radio de emergencia y la llave de acceso."); return; }
+        { if (Time.unscaledTime < nextFailureTime) return; nextFailureTime = Time.unscaledTime + 1.5f; SimulationSession.Instance?.RecordMissingItemAttempt(); notificationUI?.ShowMessage("Faltan suministros", "Necesitas la radio de emergencia y la llave de acceso."); return; }
         activated = ObjectivesManager.Instance.TryCompleteObjective(objectiveId);
         if (activated && statusRenderer != null) statusRenderer.material.color = Color.green;
     }

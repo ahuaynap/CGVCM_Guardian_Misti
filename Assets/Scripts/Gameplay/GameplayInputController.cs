@@ -2,7 +2,7 @@ using StarterAssets;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public enum GameplayInputState { Gameplay, Paused, Completed }
+public enum GameplayInputState { Gameplay, Paused, Completed, Transitioning }
 
 public class GameplayInputController : MonoBehaviour
 {
