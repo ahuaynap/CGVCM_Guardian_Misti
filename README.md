@@ -46,3 +46,15 @@ The same action is available in Unity at **Guardian Misti > Build Complete Game*
 ```
 
 Generated build binaries are excluded from version control.
+
+## Final stabilization and presentation
+
+The final builder creates lifecycle-safe interaction UI, centralized reversible gameplay input, tuned CharacterController/camera settings, composed emergency props, industrial Level01 dressing, volcanic Level02 landmarks, realtime guidance lights, URP post-processing profiles, atmospheric dust, coherent pause/completion UI, mouse sensitivity and master-volume controls. No audio files suitable for the game were present, so audio hooks remain optional and null-safe.
+
+GPU review screenshots are generated under `Artifacts/Screenshots` with:
+
+```bash
+/home/alferhp/Unity/Hub/Editor/6000.5.3f1/Editor/Unity -batchmode -quit -projectPath /home/alferhp/Guardian-Misti -executeMethod GuardianMistiScreenshotCapture.CaptureScreenshots -logFile /home/alferhp/Guardian-Misti/Logs/guardian-misti-screenshots-gpu.log
+```
+
+`-nographics` must not be used for screenshots because it selects Unity's NullGfxDevice.
