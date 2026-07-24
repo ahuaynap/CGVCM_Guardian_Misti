@@ -1,5 +1,6 @@
 public static class GameIds
 {
+    public const string Level01Preparation = "level01_preparation";
     public const string EmergencyBackpack = "backpack";
     public const string EmergencyRadio = "emergency_radio";
     public const string AccessKey = "access_key";
