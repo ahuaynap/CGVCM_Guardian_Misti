@@ -8,23 +8,44 @@ public class InteractionSystem : MonoBehaviour
     [SerializeField] private LayerMask interactionMask = ~0;
     [SerializeField] private InteractionUIController interactionUIController;
     private IInteractable currentInteractable;
+    private bool presentationAvailable = true;
+
     private void Update()
     {
         DetectInteractable();
-        if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame) currentInteractable?.Interact();
+        if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
+            currentInteractable?.Interact();
     }
+
     private void DetectInteractable()
     {
         IInteractable detected = null;
-        if (playerCamera != null && Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward,
-            out RaycastHit hit, interactionDistance, interactionMask, QueryTriggerInteraction.Ignore))
+        if (playerCamera != null && Physics.Raycast(playerCamera.transform.position,
+            playerCamera.transform.forward, out RaycastHit hit, interactionDistance,
+            interactionMask, QueryTriggerInteraction.Ignore))
         {
             hit.collider.TryGetComponent(out detected);
             if (detected == null) detected = hit.collider.GetComponentInParent<IInteractable>();
         }
         if (ReferenceEquals(detected, currentInteractable)) return;
         currentInteractable = detected;
-        if (detected == null) interactionUIController?.Hide(); else interactionUIController?.Show(detected);
+        if (!presentationAvailable || interactionUIController == null) return;
+        if (detected == null) interactionUIController.Hide(); else interactionUIController.Show(detected);
     }
-    private void OnDisable() { currentInteractable = null; interactionUIController?.Hide(); }
+
+    public void SetPresentationAvailable(bool available)
+    {
+        presentationAvailable = available;
+        if (!available) currentInteractable = null;
+    }
+
+    private void OnDisable()
+    {
+        // Scene teardown order is undefined. Never call scene-owned presentation here.
+        currentInteractable = null;
+        presentationAvailable = false;
+    }
+
+    private void OnEnable() => presentationAvailable = true;
+    private void OnDestroy() { currentInteractable = null; interactionUIController = null; playerCamera = null; }
 }

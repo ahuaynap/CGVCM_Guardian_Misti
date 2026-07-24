@@ -1,9 +1,18 @@
 using UnityEngine;
 using UnityEngine.UI;
+
 public class CrosshairUI : MonoBehaviour
 {
     [SerializeField] private Image crossHair;
     [SerializeField] private Color defaultColor = Color.white;
-    [SerializeField] private Color interactableColor = new(0.2f, 1f, 0.45f);
-    public void SetInteractable(bool interactable) { if (crossHair != null) crossHair.color = interactable ? interactableColor : defaultColor; }
+    [SerializeField] private Color interactableColor = new(.15f, .85f, 1f);
+    private bool state;
+
+    public void SetInteractable(bool interactable)
+    {
+        if (this == null || crossHair == null || state == interactable) return;
+        state = interactable;
+        crossHair.color = interactable ? interactableColor : defaultColor;
+    }
+    private void OnDestroy() => crossHair = null;
 }
