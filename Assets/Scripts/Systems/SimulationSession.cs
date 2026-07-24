@@ -22,8 +22,9 @@ public sealed class SimulationSession : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-        Instance = this; DontDestroyOnLoad(gameObject); SceneManager.sceneLoaded += OnSceneLoaded;
+        if (Instance != null && Instance != this) { if (Application.isPlaying) Destroy(gameObject); else DestroyImmediate(gameObject); return; }
+        if (transform.parent != null) transform.SetParent(null, true);
+        Instance = this; ResetRun(); if (Application.isPlaying) DontDestroyOnLoad(gameObject); SceneManager.sceneLoaded += OnSceneLoaded;
     }
     private void Update()
     {
@@ -33,6 +34,11 @@ public sealed class SimulationSession : MonoBehaviour
         else if (SceneManager.GetActiveScene().name == SceneNames.Level02) Level02Time += Time.unscaledDeltaTime;
     }
     public void StartTimer() { IsRunning = true; IsFinished = false; }
+    public void ResetRun()
+    {
+        TotalTime = 0; Level01Time = 0; Level02Time = 0; IncorrectInteractions = 0; HazardContacts = 0; MissingItemAttempts = 0; Pauses = 0;
+        IsRunning = false; IsFinished = false; ObjectiveTimestamps.Clear();
+    }
     public void StopTimer()
     {
         if (!IsRunning || IsFinished) return;
@@ -49,7 +55,13 @@ public sealed class SimulationSession : MonoBehaviour
     public int Score => PerformanceScoreCalculator.Calculate(TotalTime, IncorrectInteractions, HazardContacts, MissingItemAttempts, Pauses);
     public string Grade => PerformanceScoreCalculator.Grade(Score);
     public static string FormatTime(float seconds) => TimeSpan.FromSeconds(Mathf.Max(0, seconds)).ToString(@"mm\:ss\.fff");
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode) { if (scene.name == SceneNames.MainMenu) Destroy(gameObject); }
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode) => HandleSceneLoaded(scene.name);
+    public void HandleSceneLoaded(string sceneName)
+    {
+        Time.timeScale = 1f;
+        if (sceneName != SceneNames.MainMenu) return;
+        if (Application.isPlaying) Destroy(gameObject); else DestroyImmediate(gameObject);
+    }
     private void ExportResearch()
     {
         string directory = Path.Combine(Application.persistentDataPath, "GuardianMistiResearch");

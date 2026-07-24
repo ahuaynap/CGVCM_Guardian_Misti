@@ -32,3 +32,10 @@ Inventory generated from the complete `Assets` tree. The repository contains 10 
 | `Assets/Prefabs/Gameplay/InteractableDoor.prefab` | Frame/leaf/handle composition | Facility door | Project-owned | Project URP materials | Dedicated leaf BoxCollider | Level01 |
 
 The imported packages also contain UI textures, sprites, fonts, materials, animations and demo prefabs. They are presentation resources rather than suitable replacements for the required gameplay models. Every selected asset above is instantiated by `GuardianMistiGameBuilder`; validator checks verify required renderers and asset paths.
+
+
+## Verified external assets (2026-07-24)
+
+Kenney Furniture Kit 1.0 (CC0): desk, desk chair, open bookcase and doorway FBX meshes are preserved under `Assets/ThirdParty/Kenney/FurnitureKit` and used through project-owned URP wrapper prefabs in Level01.
+
+Kenney Survival Kit 2.0 (CC0): rock, signpost and rescue-tent FBX meshes are preserved under `Assets/ThirdParty/Kenney/SurvivalKit` and used through project-owned URP wrapper prefabs in Level02. Archive hashes, exact source URLs, licenses, prefab paths and scene usage are recorded in `Artifacts/ExternalAssetManifest.json`.

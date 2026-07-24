@@ -38,6 +38,7 @@ public class SceneLoader : MonoBehaviour
 
     private bool TryLoadScene(string sceneName)
     {
+        Time.timeScale = 1f;
         if (isLoading)
         {
             return false;

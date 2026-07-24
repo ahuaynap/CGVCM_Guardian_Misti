@@ -17,34 +17,41 @@ public sealed class EarthquakeController : MonoBehaviour
     public float CurrentIntensity { get; private set; }
     private Vector3 initialCameraLocalPosition;
     private float elapsed;
+    private Coroutine earthquakeRoutine;
+    private bool isShuttingDown;
 
-    private IEnumerator Start()
+    private void Start() => earthquakeRoutine = StartCoroutine(RunEarthquake());
+
+    private IEnumerator RunEarthquake()
     {
         if (profile == null) yield break;
         if (cameraEffectRoot != null) initialCameraLocalPosition = cameraEffectRoot.localPosition;
         float remaining = profile.PreparationCountdown;
-        while (remaining > 0)
+        while (remaining > 0 && !isShuttingDown)
         {
             if (countdownText != null) countdownText.text = $"El simulacro comenzará en {Mathf.CeilToInt(remaining)}...";
             if (intensityText != null) intensityText.text = "Intensidad simulada: Preparación";
             remaining -= Time.deltaTime;
             yield return null;
         }
+        if (isShuttingDown) yield break;
         if (countdownText != null) countdownText.gameObject.SetActive(false);
         IsRunning = true;
         SimulationSession.Instance?.StartTimer();
         EarthquakeStarted?.Invoke();
-        dust?.Play();
-        while (elapsed < profile.Duration)
+        if (dust != null) dust.Play();
+        while (elapsed < profile.Duration && !isShuttingDown)
         {
             elapsed += Time.deltaTime;
             CurrentIntensity = profile.Evaluate(elapsed);
             ApplyPresentation();
             yield return null;
         }
+        if (isShuttingDown) yield break;
         CurrentIntensity = 0;
         RestorePresentation();
         IsRunning = false;
+        earthquakeRoutine = null;
         EarthquakeFinished?.Invoke();
     }
 
@@ -72,5 +79,15 @@ public sealed class EarthquakeController : MonoBehaviour
         foreach (Light light in emergencyLights ?? Array.Empty<Light>()) if (light != null) light.enabled = true;
     }
 
-    private void OnDisable() => RestorePresentation();
+    private void StopSafely()
+    {
+        if (isShuttingDown) return;
+        isShuttingDown = true;
+        if (earthquakeRoutine != null) { StopCoroutine(earthquakeRoutine); earthquakeRoutine = null; }
+        if (dust != null && dust.isPlaying) dust.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+        IsRunning = false; CurrentIntensity = 0; RestorePresentation();
+    }
+
+    private void OnDisable() => StopSafely();
+    private void OnDestroy() => StopSafely();
 }

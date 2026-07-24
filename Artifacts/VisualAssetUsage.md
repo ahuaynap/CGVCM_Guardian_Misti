@@ -18,3 +18,10 @@ All camera positions are Unity world coordinates. Generated fallback assets use 
 | `CompletionPanel.png` | Level02 | gameplay camera | Results hierarchy, score controls |
 
 Imported mesh used in-scene: `Assets/StarterAssets/Environment/Prefabs/Box_350x250x200_Prefab.prefab`. Generated compositions are used where no credible dedicated imported backpack, radio, key, terminal, beacon or rescue-zone model exists.
+
+
+## External mesh evidence
+
+- `Level01_Start.png` and `Level01_Door_Furniture.png`: Kenney Furniture Kit desk, desk chair, open shelf and doorway through project-owned wrapper prefabs.
+- `Level02_Entry.png` and `Level02_SafeZone.png`: Kenney Survival Kit rocks, evacuation signpost and rescue tent through project-owned wrapper prefabs.
+- Source and license details: `Artifacts/ExternalAssetManifest.json` and `Assets/ThirdParty/ATTRIBUTION.md`.

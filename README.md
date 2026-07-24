@@ -63,6 +63,10 @@ GPU review screenshots are generated under `Artifacts/Screenshots` with:
 
 `-nographics` must not be used for screenshots because it selects Unity's NullGfxDevice.
 
+## External asset provenance
+
+Selected Kenney Furniture Kit 1.0 and Survival Kit 2.0 meshes are redistributed under CC0. Original archives, licenses and unchanged FBX files are stored under `Assets/ThirdParty/Kenney`; complete checksums and usage are recorded in `Artifacts/ExternalAssetManifest.json`.
+
 ## Known limitations
 
 The repository contains no dedicated emergency-object meshes or usable audio, so required objects are project-owned multi-part low-poly compositions and audio hooks remain null-safe. Seismic intensity is an educational animation curve, not a Richter-scale or structural-physics model.
