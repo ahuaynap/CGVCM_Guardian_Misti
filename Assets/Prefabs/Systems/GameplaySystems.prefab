@@ -43,8 +43,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5b2bae561ee57df61812973bb808cbf5, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::SceneLoader
+  stateController: {fileID: 0}
 --- !u!114 &1235906712669787205
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -55,5 +56,5 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 61912df17d7a210aa806353755ce001e, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::GameplayCursorController
