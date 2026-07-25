@@ -16,6 +16,9 @@ public sealed class SimulationSession : MonoBehaviour
     public int HazardContacts { get; private set; }
     public int MissingItemAttempts { get; private set; }
     public int Pauses { get; private set; }
+    public float TimeToProtection { get; private set; } = -1f;
+    public float StrongPhaseOutsideTime { get; private set; }
+    public bool ProtectionReached { get; private set; }
     public bool IsRunning { get; private set; }
     public bool IsFinished { get; private set; }
     public readonly List<string> ObjectiveTimestamps = new();
@@ -37,7 +40,7 @@ public sealed class SimulationSession : MonoBehaviour
     public void ResetRun()
     {
         TotalTime = 0; Level01Time = 0; Level02Time = 0; IncorrectInteractions = 0; HazardContacts = 0; MissingItemAttempts = 0; Pauses = 0;
-        IsRunning = false; IsFinished = false; ObjectiveTimestamps.Clear();
+        IsRunning = false; IsFinished = false; TimeToProtection = -1f; StrongPhaseOutsideTime = 0f; ProtectionReached = false; ObjectiveTimestamps.Clear();
     }
     public void StopTimer()
     {
@@ -51,6 +54,8 @@ public sealed class SimulationSession : MonoBehaviour
     public void RecordIncorrectInteraction() => IncorrectInteractions++;
     public void RecordMissingItemAttempt() => MissingItemAttempts++;
     public void RecordHazard() => HazardContacts++;
+    public void RecordProtection(float elapsed) { if (ProtectionReached) return; ProtectionReached = true; TimeToProtection = Mathf.Max(0, elapsed); }
+    public void RecordStrongOutside(float deltaTime) => StrongPhaseOutsideTime += Mathf.Max(0, deltaTime);
     public void RecordPause() => Pauses++;
     public int Score => PerformanceScoreCalculator.Calculate(TotalTime, IncorrectInteractions, HazardContacts, MissingItemAttempts, Pauses);
     public string Grade => PerformanceScoreCalculator.Grade(Score);
@@ -72,7 +77,7 @@ public sealed class SimulationSession : MonoBehaviour
     private void OnDestroy() { SceneManager.sceneLoaded -= OnSceneLoaded; if (Instance == this) Instance = null; }
     [Serializable] private sealed class ResearchRun
     {
-        public string anonymousRunId; public float totalTime; public int score, incorrectInteractions, hazards; public string[] objectives;
-        public ResearchRun(string id, SimulationSession s) { anonymousRunId=id;totalTime=s.TotalTime;score=s.Score;incorrectInteractions=s.IncorrectInteractions;hazards=s.HazardContacts;objectives=s.ObjectiveTimestamps.ToArray(); }
+        public string anonymousRunId; public float totalTime, timeToProtection, strongPhaseOutsideTime; public bool protectionReached; public int score, incorrectInteractions, hazards; public string[] objectives;
+        public ResearchRun(string id, SimulationSession s) { anonymousRunId=id;totalTime=s.TotalTime;timeToProtection=s.TimeToProtection;strongPhaseOutsideTime=s.StrongPhaseOutsideTime;protectionReached=s.ProtectionReached;score=s.Score;incorrectInteractions=s.IncorrectInteractions;hazards=s.HazardContacts;objectives=s.ObjectiveTimestamps.ToArray(); }
     }
 }
