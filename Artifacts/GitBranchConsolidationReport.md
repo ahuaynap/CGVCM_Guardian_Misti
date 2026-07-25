@@ -107,6 +107,64 @@ No cherry-picks, rebases, resets, or blanket conflict choices are required.
 
 ## Post-consolidation verification
 
-Pending. This section will be updated after the consolidated builder,
-validator, test suites, Linux build, content-containment checks, and safe local
-branch cleanup have completed.
+### Integration
+
+- Integration target: `main`
+- Merge commit: `5aca581`
+- Merge strategy: one normal `--no-ff` merge of the strict descendant
+  `codex/gameplay-earthquake-polish`
+- Cherry-picked commits: none
+- Merge conflicts: none
+- Manual conflict resolutions: none required
+- Rebase, force push, destructive reset, or destructive clean: not used
+- Final generated-content commit: `5d19529`
+
+The final builder was executed from consolidated `main`. Its regenerated
+project-owned material, prefab, and scene output was reviewed, normalized for
+Unity-generated trailing whitespace, checked with `git diff --check`, and
+committed.
+
+### Unity validation
+
+- Unity version: `6000.5.3f1`
+- Import and compilation: succeeded
+- Builder: succeeded (`GUARDIAN_MISTI_BUILD_SUCCESS`)
+- Project validator: succeeded (`GUARDIAN_MISTI_VALIDATION_SUCCESS`)
+- EditMode tests: 41 passed, 0 failed, 0 skipped
+- PlayMode discovery: 0 tests available, 0 failed. This is an explicit
+  automated coverage limitation, not a substantive passing PlayMode suite.
+- Linux x86_64 build: succeeded
+- Linux artifact: `/tmp/GuardianMistiConsolidated/GuardianMisti.x86_64`
+- Exception scan: no project-owned missing/null/unassigned-reference exception,
+  root-object `DontDestroyOnLoad` warning, missing script, compiler error,
+  assertion failure, shader error, or build failure.
+- Unity license-client startup retries occurred before successful licensing;
+  they did not affect compilation, validation, tests, or the player build.
+
+Validation logs are local ignored artifacts under `Logs/`:
+
+- `Logs/main-consolidation-compile.log`
+- `Logs/main-consolidation-build.log`
+- `Logs/main-consolidation-validation.log`
+- `Logs/main-consolidation-editmode-tests.log`
+- `Logs/main-consolidation-editmode-results.xml`
+- `Logs/main-consolidation-playmode-tests.log`
+- `Logs/main-consolidation-playmode-results.xml`
+- `Logs/main-consolidation-linux-build.log`
+
+### Branch containment and cleanup
+
+Before deletion, all three source branches appeared in
+`git branch --merged main`, every `git log main..<branch>` was empty, and every
+source head passed `git merge-base --is-ancestor <branch> main`.
+
+- `codex/complete-guardian-misti`: fully represented; deleted locally with `-d`.
+- `codex/final-guardian-misti-polish`: fully represented; deleted locally with `-d`.
+- `codex/gameplay-earthquake-polish`: fully represented; deleted locally with `-d`.
+- Partially integrated branches: none.
+- Intentionally excluded implementation commits: none.
+- Branches retained for unresolved review: none.
+- Remote branches deleted: none.
+
+Only local `main` and remote-tracking `origin/main` remain. A normal push of
+`main` is attempted only after this finalized report is committed.
