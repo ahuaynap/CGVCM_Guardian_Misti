@@ -12,6 +12,6 @@ public class GameCompletionController : MonoBehaviour
         stateController?.RequestState(GameplayState.Completed);
     }
     public void ReturnToMainMenu() => sceneLoader?.LoadMainMenu();
-    public void RestartCurrentLevel() => sceneLoader?.ReloadCurrentScene();
+    public void RestartCurrentLevel() { SimulationSession.Instance?.ResetRun(); sceneLoader?.LoadLevel01(); }
     public void QuitGame() => sceneLoader?.QuitGame();
 }

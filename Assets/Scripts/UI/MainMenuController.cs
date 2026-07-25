@@ -12,6 +12,7 @@ public class MainMenuController : MonoBehaviour
 
     public void StartGame()
     {
+        SimulationSession.Instance?.ResetRun();
         if (sceneLoader == null)
         {
             Debug.LogWarning("MainMenuController requires a SceneLoader reference.", this);

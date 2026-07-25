@@ -67,6 +67,12 @@ GPU review screenshots are generated under `Artifacts/Screenshots` with:
 
 Selected Kenney Furniture Kit 1.0 and Survival Kit 2.0 meshes are redistributed under CC0. Original archives, licenses and unchanged FBX files are stored under `Assets/ThirdParty/Kenney`; complete checksums and usage are recorded in `Artifacts/ExternalAssetManifest.json`.
 
+## Evaluation and research data
+
+The educational score starts at 1000 and is clamped to 0–1100. Penalties are 2 points per second after 180 seconds, 25 per incorrect interaction, 80 per hazard contact, 35 per missing-item beacon attempt, and 8 per second when protection takes longer than 15 seconds; failing to reach protection costs 180 points. Bonuses are 75 for reaching protection within 8 seconds, 75 for correct objective order, 50 for zero hazards, and 25 for an efficient route of at most 180 metres. Grades are Excelente at 900+, Bueno at 750–899, Regular at 550–749, and Debe mejorar below 550. This is an educational simulation score, not an official emergency-response certification.
+
+When `Guardar datos anónimos del simulacro` is enabled, one anonymous JSON file and a CSV summary are written locally to `Application.persistentDataPath/GuardianMistiResearch`. The export contains no personal information and is never uploaded. It records difficulty, objective timestamps, low-frequency position samples, hazards, incorrect interactions, elapsed time and final score.
+
 ## Known limitations
 
 The repository contains no dedicated emergency-object meshes or usable audio, so required objects are project-owned multi-part low-poly compositions and audio hooks remain null-safe. Seismic intensity is an educational animation curve, not a Richter-scale or structural-physics model.

@@ -14,7 +14,10 @@ public class InteractionSystem : MonoBehaviour
     {
         DetectInteractable();
         if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
-            currentInteractable?.Interact();
+        {
+            if (currentInteractable == null) SimulationSession.Instance?.RecordIncorrectInteraction();
+            else currentInteractable.Interact();
+        }
     }
 
     private void DetectInteractable()

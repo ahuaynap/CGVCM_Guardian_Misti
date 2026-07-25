@@ -23,7 +23,7 @@ public class ObjectivesManager : MonoBehaviour
     public bool IsCurrentObjective(string objectiveId) => GetCurrentObjective() is Objective current && current.Id == objectiveId;
     public bool TryCompleteObjective(string objectiveId)
     {
-        if (!IsCurrentObjective(objectiveId)) return false;
+        if (!IsCurrentObjective(objectiveId)) { SimulationSession.Instance?.RecordIncorrectInteraction(); SimulationSession.Instance?.RecordObjectiveOrderViolation(); return false; }
         SimulationSession.Instance?.RecordObjective(objectiveId);
         currentObjectiveIndex++;
         if (IsSimulationCompleted) { objectiveUI?.Hide(); AllObjectivesCompleted?.Invoke(); return true; }

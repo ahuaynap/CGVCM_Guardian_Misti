@@ -59,6 +59,7 @@ public class SceneLoader : MonoBehaviour
         }
 
         isLoading = true;
+        Time.timeScale = 1f;
         stateController?.RequestState(GameplayState.Transitioning);
         SceneManager.LoadScene(sceneName);
         return true;
