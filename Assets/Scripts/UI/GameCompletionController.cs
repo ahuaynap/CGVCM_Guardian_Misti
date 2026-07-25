@@ -3,76 +3,15 @@ using UnityEngine;
 public class GameCompletionController : MonoBehaviour
 {
     [SerializeField] private SceneLoader sceneLoader;
-    [SerializeField] private Behaviour[] gameplayBehaviours;
-
-    private bool completionModeApplied;
-
-    private void OnEnable()
-    {
-        EnterCompletionMode();
-    }
-
+    [SerializeField] private GameplayStateController stateController;
+    [SerializeField] private PauseController pauseController;
+    private bool applied;
     public void EnterCompletionMode()
     {
-        if (completionModeApplied)
-        {
-            return;
-        }
-
-        completionModeApplied = true;
-
-        if (gameplayBehaviours != null)
-        {
-            foreach (Behaviour gameplayBehaviour in gameplayBehaviours)
-            {
-                if (gameplayBehaviour != null && gameplayBehaviour != this)
-                {
-                    gameplayBehaviour.enabled = false;
-                }
-            }
-        }
-
-        CursorState.ApplyMenuMode();
+        if (applied) return; applied = true;
+        stateController?.RequestState(GameplayState.Completed);
     }
-
-    public void ReturnToMainMenu()
-    {
-        if (sceneLoader == null)
-        {
-            Debug.LogWarning("GameCompletionController requires a SceneLoader reference.", this);
-            return;
-        }
-
-        sceneLoader.LoadMainMenu();
-    }
-
-    public void RestartCurrentLevel()
-    {
-        if (sceneLoader == null)
-        {
-            Debug.LogWarning("GameCompletionController requires a SceneLoader reference.", this);
-            return;
-        }
-
-        sceneLoader.ReloadCurrentScene();
-    }
-
-    public void QuitGame()
-    {
-        if (sceneLoader == null)
-        {
-            Debug.LogWarning("GameCompletionController requires a SceneLoader reference.", this);
-            return;
-        }
-
-        sceneLoader.QuitGame();
-    }
-
-    private void OnValidate()
-    {
-        if (sceneLoader == null)
-        {
-            Debug.LogWarning("GameCompletionController requires a SceneLoader reference.", this);
-        }
-    }
+    public void ReturnToMainMenu() => sceneLoader?.LoadMainMenu();
+    public void RestartCurrentLevel() { SimulationSession.Instance?.ResetRun(); sceneLoader?.LoadLevel01(); }
+    public void QuitGame() => sceneLoader?.QuitGame();
 }

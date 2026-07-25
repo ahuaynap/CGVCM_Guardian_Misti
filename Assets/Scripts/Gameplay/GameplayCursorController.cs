@@ -1,9 +1,5 @@
 using UnityEngine;
-
 public class GameplayCursorController : MonoBehaviour
 {
-    private void OnEnable()
-    {
-        CursorState.ApplyGameplayMode();
-    }
+    // Cursor state is owned exclusively by GameplayStateController.
 }

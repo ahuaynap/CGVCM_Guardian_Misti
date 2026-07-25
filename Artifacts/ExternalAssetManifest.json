@@ -1,0 +1,48 @@
+{
+  "assets": [
+    {
+      "provider": "Kenney",
+      "pack": "Furniture Kit 1.0",
+      "author": "Kenney",
+      "source": "https://kenney.nl/assets/furniture-kit",
+      "license": "Creative Commons CC0 1.0 Universal",
+      "downloadDate": "2026-07-24",
+      "archiveSha256": "e67652d0932cee41683f74711c03d3e192a2af9979ef8e6b237711f5482d46b0",
+      "importedAssetPaths": [
+        "Assets/ThirdParty/Kenney/FurnitureKit/Models/desk.fbx",
+        "Assets/ThirdParty/Kenney/FurnitureKit/Models/chairDesk.fbx",
+        "Assets/ThirdParty/Kenney/FurnitureKit/Models/bookcaseOpen.fbx",
+        "Assets/ThirdParty/Kenney/FurnitureKit/Models/doorway.fbx"
+      ],
+      "generatedPrefabPaths": [
+        "Assets/Prefabs/Environment/KenneyDesk.prefab",
+        "Assets/Prefabs/Environment/KenneyChair.prefab",
+        "Assets/Prefabs/Environment/KenneyShelf.prefab",
+        "Assets/Prefabs/Environment/KenneyDoorFrame.prefab"
+      ],
+      "scenesUsed": ["Level01"]
+    },
+    {
+      "provider": "Kenney",
+      "pack": "Survival Kit 2.0",
+      "author": "Kenney",
+      "source": "https://kenney.nl/assets/survival-kit",
+      "license": "Creative Commons CC0 1.0 Universal",
+      "downloadDate": "2026-07-24",
+      "archiveSha256": "c3586341b5932c87eb43d75d915434f47daed168b17ed36a03e8ca9977c7443e",
+      "importedAssetPaths": [
+        "Assets/ThirdParty/Kenney/SurvivalKit/Models/rock-a.fbx",
+        "Assets/ThirdParty/Kenney/SurvivalKit/Models/rock-b.fbx",
+        "Assets/ThirdParty/Kenney/SurvivalKit/Models/rock-c.fbx",
+        "Assets/ThirdParty/Kenney/SurvivalKit/Models/signpost.fbx",
+        "Assets/ThirdParty/Kenney/SurvivalKit/Models/tent-canvas.fbx"
+      ],
+      "generatedPrefabPaths": [
+        "Assets/Prefabs/Environment/KenneyRock.prefab",
+        "Assets/Prefabs/Environment/KenneySignpost.prefab",
+        "Assets/Prefabs/Environment/KenneyRescueTent.prefab"
+      ],
+      "scenesUsed": ["Level02"]
+    }
+  ]
+}

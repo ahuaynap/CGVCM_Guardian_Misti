@@ -2,14 +2,7 @@ using UnityEngine;
 
 public class GameCompletionUI : MonoBehaviour
 {
-    public void Show()
-    {
-        gameObject.SetActive(true);
-        CursorState.ApplyMenuMode();
-    }
-
-    public void Hide()
-    {
-        gameObject.SetActive(false);
-    }
+    [SerializeField] private GameCompletionController controller;
+    public void Show() => controller?.EnterCompletionMode();
+    public void Hide() { gameObject.SetActive(false); }
 }

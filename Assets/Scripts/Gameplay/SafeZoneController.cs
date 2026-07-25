@@ -2,22 +2,14 @@ using UnityEngine;
 
 public class SafeZoneController : MonoBehaviour
 {
-    private bool hasCompletedObjective;
-
+    [SerializeField] private ObjectivesManager objectivesManager;
+    [SerializeField] private string objectiveId = GameIds.Level02ReachSafeZone;
+    [SerializeField] private GameCompletionUI completionUI;
+    private bool completed;
     private void OnTriggerEnter(Collider other)
     {
-        if (hasCompletedObjective || !other.CompareTag("Player"))
-        {
-            return;
-        }
-
-        if (ObjectivesManager.Instance == null)
-        {
-            Debug.LogWarning("ObjectivesManager not found.", this);
-            return;
-        }
-
-        hasCompletedObjective = ObjectivesManager.Instance.TryCompleteObjective(
-            GameIds.ReachSafeZoneObjective);
+        if (completed || !other.CompareTag("Player") || objectivesManager == null) return;
+        completed = objectivesManager.TryCompleteObjective(objectiveId);
+        if (completed && objectivesManager.IsSimulationCompleted) { SimulationSession.Instance?.StopTimer(); completionUI?.Show(); }
     }
 }

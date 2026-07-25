@@ -4,45 +4,13 @@ public class LevelExitController : MonoBehaviour
 {
     [SerializeField] private SceneLoader sceneLoader;
     [SerializeField] private GameScene nextScene = GameScene.Level02;
-    [SerializeField] private bool requireObjectivesCompleted = true;
     [SerializeField] private ObjectivesManager objectivesManager;
-
+    [SerializeField] private string objectiveId = GameIds.Level01ReachExit;
     private bool transitionRequested;
-
     private void OnTriggerEnter(Collider other)
     {
-        if (transitionRequested || !other.CompareTag("Player"))
-        {
-            return;
-        }
-
-        if (requireObjectivesCompleted &&
-            (objectivesManager == null || !objectivesManager.IsSimulationCompleted))
-        {
-            return;
-        }
-
-        if (sceneLoader == null)
-        {
-            Debug.LogWarning("LevelExitController requires a SceneLoader reference.", this);
-            return;
-        }
-
-        transitionRequested = sceneLoader.TryLoadScene(nextScene);
-    }
-
-    private void OnValidate()
-    {
-        if (sceneLoader == null)
-        {
-            Debug.LogWarning("LevelExitController requires a SceneLoader reference.", this);
-        }
-
-        if (requireObjectivesCompleted && objectivesManager == null)
-        {
-            Debug.LogWarning(
-                "LevelExitController requires an ObjectivesManager when objective completion is required.",
-                this);
-        }
+        if (transitionRequested || !other.CompareTag("Player") || objectivesManager == null) return;
+        if (!objectivesManager.TryCompleteObjective(objectiveId)) return;
+        transitionRequested = sceneLoader != null && sceneLoader.TryLoadScene(nextScene);
     }
 }
