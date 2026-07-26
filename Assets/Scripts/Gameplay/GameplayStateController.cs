@@ -12,6 +12,7 @@ public class GameplayStateController : MonoBehaviour
     [SerializeField] private StarterAssetsInputs starterInputs;
     [SerializeField] private InteractionSystem interaction;
     [SerializeField] private PlayerCrouchController crouch;
+    [SerializeField] private PlayerLookController lookController;
     [SerializeField] private GameObject pausePanel;
     [SerializeField] private GameObject completionPanel;
     public GameplayState State { get; private set; } = GameplayState.Transitioning;
@@ -37,6 +38,7 @@ public class GameplayStateController : MonoBehaviour
         if (playing) playerInput?.ActivateInput(); else playerInput?.DeactivateInput();
         if (movement != null) movement.enabled = playing;
         crouch?.SetInputEnabled(playing);
+        lookController?.SetInputEnabled(playing);
         if (interaction != null)
         {
             interaction.enabled = playing;

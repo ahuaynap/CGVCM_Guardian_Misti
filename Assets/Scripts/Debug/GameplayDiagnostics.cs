@@ -16,6 +16,9 @@ public sealed class GameplayDiagnostics : MonoBehaviour
     [SerializeField] private GameObject pausePanel;
     [SerializeField] private GameObject completionPanel;
     [SerializeField] private GameplayRuntimeLogger runtimeLogger;
+    [SerializeField] private PlayerLookController lookController;
+    [SerializeField] private PlayerCrouchController crouchController;
+    [SerializeField] private EarthquakeController earthquakeController;
     private Vector3 previousPosition;
     private float smoothedFps;
     public string Snapshot { get; private set; }
@@ -38,6 +41,14 @@ public sealed class GameplayDiagnostics : MonoBehaviour
             $"FPC {movement?.enabled}  Inputs {inputs?.enabled}  Interaction {interaction?.enabled}\n" +
             $"EventSystem {(EventSystem.current != null)}  selected {(EventSystem.current?.currentSelectedGameObject?.name ?? "ninguno")}\n" +
             $"Pause {pausePanel?.activeSelf}  Completion {completionPanel?.activeSelf}\n" +
-            $"overlaps {overlaps.Length}  blocker {runtimeLogger?.LastBlockingCollider ?? "ninguno"}  ground {ground}\nFPS {smoothedFps:F1}";
+            $"overlaps {overlaps.Length}  blocker {runtimeLogger?.LastBlockingCollider ?? "ninguno"}  ground {ground}\n" +
+            $"\nCAMERA\nraw {lookController?.RawLookInput}  device {lookController?.InputDeviceName}\n" +
+            $"mouse {lookController?.MouseSensitivity:F2}  gamepad {lookController?.GamepadSensitivity:F1}\n" +
+            $"pitch {lookController?.Pitch:F1}  yaw {lookController?.Yaw:F1}  smoothing {lookController?.SmoothingEnabled}\n" +
+            $"paused {stateController?.State != GameplayState.Playing}  cursor {Cursor.lockState}\n" +
+            $"controller {lookController?.GetType().Name ?? "ninguno"}  active {PlayerLookController.CountActiveLookControllers(gameObject)}\n" +
+             "hierarchy " + (lookController?.HierarchyDescription ?? "incompleta") + "\n" +
+            "shake " + lookController?.ShakeOffset + "  crouchHeight " + lookController?.CrouchHeightOffset + "\n" +
+            "crouching " + crouchController?.IsCrouching + "  quake " + earthquakeController?.State + "\nFPS " + smoothedFps.ToString("F1");
     }
 }
