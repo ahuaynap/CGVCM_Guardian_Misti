@@ -30,19 +30,21 @@ public static class GuardianMistiGameBuilder
     {
         try
         {
-            Debug.Log("[Guardian Misti] Preparing polished assets"); EnsureFolders(); CreateMaterials(); CreateVolumeProfiles(); CreateEarthquakeProfiles(); CreateAftershockProfile(); CreateItems(); CreatePrefabs();
+            Debug.Log("[Guardian Misti] Preparing polished assets"); EnsureFolders(); CreateMaterials(); CreateVolumeProfiles(); CreateEarthquakeProfiles(); CreateAftershockProfile(); CreateItems(); CreatePrefabs(); GuardianMistiAssetHubPipeline.GenerateValidatedBatch();
             BuildMainMenu(); BuildLevel(false); BuildLevel(true);
+            GuardianMistiAssetHubPipeline.IntegrateLevel01(); GuardianMistiAssetHubPipeline.IntegrateLevel02(); GuardianMistiAssetHubPipeline.BuildLevel03();
             EditorBuildSettings.scenes = new[] {
                 new EditorBuildSettingsScene("Assets/Scenes/MainMenu.unity", true),
                 new EditorBuildSettingsScene("Assets/Scenes/Level01.unity", true),
-                new EditorBuildSettingsScene("Assets/Scenes/Level02.unity", true)};
+                new EditorBuildSettingsScene("Assets/Scenes/Level02.unity", true),
+                new EditorBuildSettingsScene("Assets/Scenes/Level03.unity", true)};
             AssetDatabase.SaveAssets(); AssetDatabase.Refresh();
             Debug.Log("GUARDIAN_MISTI_BUILD_SUCCESS");
         }
         catch (Exception ex) { Debug.LogException(ex); throw; }
     }
 
-    [MenuItem("Guardian Misti/Build Linux Player")] public static void BuildLinuxPlayer(){Directory.CreateDirectory("Builds/Linux");var report=BuildPipeline.BuildPlayer(new[]{"Assets/Scenes/MainMenu.unity","Assets/Scenes/Level01.unity","Assets/Scenes/Level02.unity"},"Builds/Linux/GuardianMisti.x86_64",BuildTarget.StandaloneLinux64,BuildOptions.None);if(report.summary.result!=UnityEditor.Build.Reporting.BuildResult.Succeeded)throw new Exception("Linux build failed: "+report.summary.result);Debug.Log("GUARDIAN_MISTI_LINUX_BUILD_SUCCESS");}
+    [MenuItem("Guardian Misti/Build Linux Player")] public static void BuildLinuxPlayer(){Directory.CreateDirectory("Builds/Linux");var report=BuildPipeline.BuildPlayer(new[]{"Assets/Scenes/MainMenu.unity","Assets/Scenes/Level01.unity","Assets/Scenes/Level02.unity","Assets/Scenes/Level03.unity"},"Builds/Linux/GuardianMisti.x86_64",BuildTarget.StandaloneLinux64,BuildOptions.None);if(report.summary.result!=UnityEditor.Build.Reporting.BuildResult.Succeeded)throw new Exception("Linux build failed: "+report.summary.result);Debug.Log("GUARDIAN_MISTI_LINUX_BUILD_SUCCESS");}
     private static void EnsureFolders()
     {
         foreach (string path in new[]{"Assets/Editor","Assets/Scenes","Assets/Prefabs","Assets/Prefabs/Player","Assets/Prefabs/UI","Assets/Prefabs/Systems","Assets/Prefabs/Gameplay","Assets/ScriptableObjects","Assets/ScriptableObjects/Items","Assets/ScriptableObjects/Earthquakes","Assets/ScriptableObjects/Earthquake","Assets/Art/Materials","Assets/Materials","Assets/Settings/GuardianMisti","Assets/Prefabs/Environment","Assets/Prefabs/Props","Assets/Tests/EditMode"})

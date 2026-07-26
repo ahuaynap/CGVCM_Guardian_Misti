@@ -15,7 +15,7 @@ using UnityEngine.UI;
 public static class GuardianMistiProjectValidator
 {
     private static readonly List<string> Errors=new();
-    private static readonly string[] Scenes={"Assets/Scenes/MainMenu.unity","Assets/Scenes/Level01.unity","Assets/Scenes/Level02.unity"};
+    private static readonly string[] Scenes={"Assets/Scenes/MainMenu.unity","Assets/Scenes/Level01.unity","Assets/Scenes/Level02.unity","Assets/Scenes/Level03.unity"};
     private static readonly string[] Prefabs={"Assets/Prefabs/Player/GameplayPlayer.prefab","Assets/Prefabs/UI/GameplayHUD.prefab","Assets/Prefabs/Systems/GameplaySystems.prefab","Assets/Prefabs/Gameplay/FacilityExitDoor.prefab","Assets/Prefabs/Gameplay/InteriorProtectionZone.prefab","Assets/Prefabs/Gameplay/CollectibleItem.prefab","Assets/Prefabs/Gameplay/LevelExit.prefab","Assets/Prefabs/Gameplay/SafeZone.prefab","Assets/Prefabs/Gameplay/EvacuationTerminal.prefab","Assets/Prefabs/Gameplay/EmergencyBeacon.prefab","Assets/Prefabs/Gameplay/EmergencyBackpack.prefab","Assets/Prefabs/Gameplay/EmergencyRadio.prefab","Assets/Prefabs/Gameplay/AccessKey.prefab","Assets/Prefabs/Environment/FacilityModule.prefab","Assets/Prefabs/Environment/KenneyDesk.prefab","Assets/Prefabs/Environment/KenneyChair.prefab","Assets/Prefabs/Environment/KenneyShelf.prefab","Assets/Prefabs/Environment/KenneyDoorFrame.prefab","Assets/Prefabs/Environment/KenneyRock.prefab","Assets/Prefabs/Environment/KenneySignpost.prefab","Assets/Prefabs/Environment/KenneyRescueTent.prefab","Assets/Prefabs/Environment/Desk.prefab","Assets/Prefabs/Environment/Chair.prefab","Assets/Prefabs/Environment/Shelf.prefab","Assets/Prefabs/Environment/EmergencySign.prefab"};
     [MenuItem("Guardian Misti/Validate Project")]
     public static void ValidateProject()
@@ -24,9 +24,9 @@ public static class GuardianMistiProjectValidator
         foreach(string p in Scenes.Concat(Prefabs))NeedAsset(p);
         foreach(string p in new[]{"Assets/ScriptableObjects/Items/EmergencyBackpack.asset","Assets/ScriptableObjects/Items/EmergencyRadio.asset","Assets/ScriptableObjects/Items/AccessKey.asset","Assets/Settings/GuardianMisti/MainMenuVolume.asset","Assets/Settings/GuardianMisti/Level01Volume.asset","Assets/Settings/GuardianMisti/Level02Volume.asset"})NeedAsset(p);
         foreach(string p in new[]{"Assets/ThirdParty/Kenney/FurnitureKit/Models/desk.fbx","Assets/ThirdParty/Kenney/FurnitureKit/Models/chairDesk.fbx","Assets/ThirdParty/Kenney/FurnitureKit/Models/bookcaseOpen.fbx","Assets/ThirdParty/Kenney/FurnitureKit/Models/doorway.fbx","Assets/ThirdParty/Kenney/SurvivalKit/Models/rock-a.fbx","Assets/ThirdParty/Kenney/SurvivalKit/Models/signpost.fbx","Assets/ThirdParty/Kenney/SurvivalKit/Models/tent-canvas.fbx","Assets/ThirdParty/ATTRIBUTION.md","Artifacts/ExternalAssetManifest.json"})NeedAsset(p);
-        var enabled=EditorBuildSettings.scenes.Where(s=>s.enabled).Select(s=>s.path).ToArray();if(!enabled.SequenceEqual(Scenes))Error("Build scenes must be MainMenu, Level01, Level02 only and in order.");
+        var enabled=EditorBuildSettings.scenes.Where(s=>s.enabled).Select(s=>s.path).ToArray();if(!enabled.SequenceEqual(Scenes))Error("Build scenes must be MainMenu, Level01, Level02, Level03 and in order.");
         ValidateItem("EmergencyBackpack",GameIds.EmergencyBackpack);ValidateItem("EmergencyRadio",GameIds.EmergencyRadio);ValidateItem("AccessKey",GameIds.AccessKey);
-        ValidateScene(Scenes[0],false,false);ValidateScene(Scenes[1],true,false);ValidateScene(Scenes[2],true,true);
+        ValidateScene(Scenes[0],false,false);ValidateScene(Scenes[1],true,false);ValidateScene(Scenes[2],true,true);foreach(string assetHubError in GuardianMistiAssetHubValidator.Validate())Error(assetHubError);
         if(Errors.Count>0){foreach(string e in Errors)Debug.LogError("VALIDATION: "+e);throw new Exception($"Guardian Misti validation failed with {Errors.Count} actionable error(s).");}
         Debug.Log("GUARDIAN_MISTI_VALIDATION_SUCCESS");
     }

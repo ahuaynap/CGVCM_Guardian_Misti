@@ -1,5 +1,6 @@
 #if UNITY_INCLUDE_TESTS
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using StarterAssets;
@@ -80,6 +81,10 @@ public class GuardianMistiEditModeTests
     [Test] public void CameraPitchClampsToConfiguredLimits(){Assert.AreEqual(-85f,PlayerLookController.ClampPitch(-100f,-85f,85f));Assert.AreEqual(85f,PlayerLookController.ClampPitch(100f,-85f,85f));}
     [Test] public void MouseDeltaDoesNotUseFrameTimeButGamepadDoes(){var input=new Vector2(4f,-2f);Assert.AreEqual(PlayerLookController.CalculateRotationDelta(input,true,1.5f,180f,.01f),PlayerLookController.CalculateRotationDelta(input,true,1.5f,180f,.04f));Assert.AreEqual(PlayerLookController.CalculateRotationDelta(input,false,1.5f,180f,.01f)*4f,PlayerLookController.CalculateRotationDelta(input,false,1.5f,180f,.04f));}
     [Test] public void LookControllerDetectsDuplicates(){var player=new GameObject("LookPlayer");cleanup.Add(player);player.AddComponent<PlayerLookController>();var child=new GameObject("Duplicate");cleanup.Add(child);child.transform.SetParent(player.transform);child.AddComponent<PlayerLookController>();Assert.AreEqual(2,PlayerLookController.CountActiveLookControllers(player));}
+    [Test] public void AssetHubSemanticModelsResolve(){foreach(GuardianMistiAssetHubPipeline.Semantic semantic in System.Enum.GetValues(typeof(GuardianMistiAssetHubPipeline.Semantic)))Assert.IsNotEmpty(GuardianMistiAssetHubPipeline.ResolveSource(semantic),semantic.ToString());}
+    [Test] public void AssetHubProductionPrefabsAreNormalizedAndUseUrp(){foreach(GuardianMistiAssetHubPipeline.Semantic semantic in System.Enum.GetValues(typeof(GuardianMistiAssetHubPipeline.Semantic))){var prefab=UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(GuardianMistiAssetHubPipeline.GetPrefabPath(semantic));Assert.NotNull(prefab,semantic.ToString());Assert.AreEqual(Vector3.zero,prefab.transform.localPosition);Assert.AreEqual(Quaternion.identity,prefab.transform.localRotation);Assert.AreEqual(Vector3.one,prefab.transform.localScale);Assert.Greater(prefab.GetComponentsInChildren<Collider>(true).Length,0);Assert.True(prefab.GetComponentsInChildren<Renderer>(true).All(r=>r.sharedMaterials.All(m=>m!=null&&m.shader.name.Contains("Universal Render Pipeline"))));}}
+    [Test] public void AssetHubDeskAndTentKeepOpenAccess(){var desk=UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(GuardianMistiAssetHubPipeline.GetPrefabPath(GuardianMistiAssetHubPipeline.Semantic.Desk));Assert.False(desk.GetComponentsInChildren<BoxCollider>(true).Any(c=>c.bounds.Contains(new Vector3(0,.45f,0))));var tent=UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(GuardianMistiAssetHubPipeline.GetPrefabPath(GuardianMistiAssetHubPipeline.Semantic.Tent));Assert.False(tent.GetComponentsInChildren<BoxCollider>(true).Any(c=>c.bounds.Contains(new Vector3(0,1,-3f))));}
+    [Test] public void AssetHubVisualBackpackHasNoLevelSpecificLogic(){var prefab=UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(GuardianMistiAssetHubPipeline.GetPrefabPath(GuardianMistiAssetHubPipeline.Semantic.Backpack));Assert.Zero(prefab.GetComponentsInChildren<CollectibleItemController>(true).Length);}
     private EarthquakeController Quake(float countdown,float duration){var q=Component<EarthquakeController>();var p=ScriptableObject.CreateInstance<EarthquakeProfile>();cleanup.Add(p);Set(p,"<PreparationCountdown>k__BackingField",countdown);Set(p,"<Duration>k__BackingField",duration);Set(q,"profile",p);return q;}
 }
 #endif

@@ -21,6 +21,13 @@ public class SceneLoader : MonoBehaviour
         TryLoadScene(SceneNames.Level02);
     }
 
+    public void LoadLevel03()
+    {
+        TryLoadScene(SceneNames.Level03);
+    }
+
+    public bool TryLoadSceneByName(string sceneName) => TryLoadScene(sceneName);
+
     public void LoadSimulation()
     {
         TryLoadScene(SceneNames.Simulation);
