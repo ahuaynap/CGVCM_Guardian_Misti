@@ -30,7 +30,11 @@ public class InteractionSystem : MonoBehaviour
             hit.collider.TryGetComponent(out detected);
             if (detected == null) detected = hit.collider.GetComponentInParent<IInteractable>();
         }
-        if (ReferenceEquals(detected, currentInteractable)) return;
+        if (ReferenceEquals(detected, currentInteractable))
+        {
+            if (detected != null && presentationAvailable && interactionUIController != null) interactionUIController.Refresh(detected);
+            return;
+        }
         currentInteractable = detected;
         if (!presentationAvailable || interactionUIController == null) return;
         if (detected == null) interactionUIController.Hide(); else interactionUIController.Show(detected);

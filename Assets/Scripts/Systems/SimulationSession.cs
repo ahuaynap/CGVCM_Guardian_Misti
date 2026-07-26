@@ -20,6 +20,10 @@ public sealed class SimulationSession : MonoBehaviour
     public float TimeToFinalSafeZone { get; private set; } = -1f;
     public float DistanceTravelled { get; private set; }
     public float StrongPhaseOutsideTime { get; private set; }
+    public float AftershockRiskTime { get; private set; }
+    public float AftershockReactionTime { get; private set; } = -1f;
+    public int AftershockUnsafeEntries { get; private set; }
+    public bool AftershockReachedClearArea { get; private set; }
     public int IncorrectInteractions { get; private set; }
     public int HazardContacts { get; private set; }
     public int MissingItemAttempts { get; private set; }
@@ -59,7 +63,7 @@ public sealed class SimulationSession : MonoBehaviour
     public void ResetRun()
     {
         TotalTime=0;Level01Time=0;Level02Time=0;TimeToProtection=-1;TimeToLevel01Exit=-1;TimeToBeacon=-1;TimeToFinalSafeZone=-1;DistanceTravelled=0;StrongPhaseOutsideTime=0;
-        IncorrectInteractions=0;HazardContacts=0;MissingItemAttempts=0;Pauses=0;ProtectionReached=false;ProtectionFailed=false;ObjectiveOrderRespected=true;IsRunning=false;IsFinished=false;StopCount=0;
+        AftershockRiskTime=0;AftershockReactionTime=-1;AftershockUnsafeEntries=0;AftershockReachedClearArea=false;IncorrectInteractions=0;HazardContacts=0;MissingItemAttempts=0;Pauses=0;ProtectionReached=false;ProtectionFailed=false;ObjectiveOrderRespected=true;IsRunning=false;IsFinished=false;StopCount=0;
         Difficulty=PlayerPrefs.GetString(DifficultyKey,"Intermedio");ObjectiveTimestamps.Clear();PositionSamples.Clear();hasPlayerPosition=false;nextPositionSampleTime=0;
     }
     public bool StopTimer()
@@ -85,6 +89,9 @@ public sealed class SimulationSession : MonoBehaviour
     public void RecordProtection(float elapsed){if(ProtectionReached)return;ProtectionReached=true;TimeToProtection=Mathf.Max(0,elapsed);}
     public void RecordProtectionFailure(){if(ProtectionFailed)return;ProtectionFailed=true;HazardContacts++;}
     public void RecordStrongOutside(float deltaTime){if(Time.timeScale>0)StrongPhaseOutsideTime+=Mathf.Max(0,deltaTime);}
+    public void RecordAftershockRiskTime(float deltaTime){AftershockRiskTime+=Mathf.Max(0,deltaTime);}
+    public void RecordAftershockUnsafeEntry(){AftershockUnsafeEntries++;HazardContacts++;}
+    public void RecordAftershockClearArea(float reactionTime){if(AftershockReachedClearArea)return;AftershockReachedClearArea=true;AftershockReactionTime=Mathf.Max(0,reactionTime);}
     public void RecordPause(){Pauses++;}
     public void ReportPlayerPosition(Vector3 position)
     {

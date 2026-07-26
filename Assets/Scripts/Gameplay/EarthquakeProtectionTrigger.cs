@@ -18,6 +18,8 @@ public sealed class EarthquakeProtectionTrigger : MonoBehaviour
     [SerializeField] private Renderer floorBoundaryRenderer;
     [SerializeField] private Renderer statusLightRenderer;
     [SerializeField] private Light accentLight;
+    [SerializeField] private PlayerCrouchController crouchController;
+    [SerializeField] private TMP_Text dwellProgressText;
     [SerializeField] private string objectiveId = RequiredObjectiveId;
     [SerializeField, Min(.25f)] private float requiredDwellSeconds = 2f;
     [SerializeField, Min(1f)] private float promptDistance = 4.5f;
@@ -60,10 +62,11 @@ public sealed class EarthquakeProtectionTrigger : MonoBehaviour
     {
         bool relevant = IsProtectionObjectiveCurrent();
         bool active = relevant && earthquakeController != null && earthquakeController.IsProtectionPhase;
-        if (active && isInside && !earthquakeController.ProtectionReached) earthquakeController.TryMarkProtectionEntered();
-        if (active && isInside && !dwellSatisfied)
+        bool crouching = crouchController != null && crouchController.IsCrouching;
+        if (active && isInside && crouching && !earthquakeController.ProtectionReached) earthquakeController.TryMarkProtectionEntered();
+        if (active && isInside && crouching && !dwellSatisfied)
         {
-            dwellProgress = CalculateDwellProgress(dwellProgress, Time.deltaTime, true, earthquakeController.State, requiredDwellSeconds);
+            dwellProgress = CalculateDwellProgress(dwellProgress, Time.deltaTime, true, true, earthquakeController.State, requiredDwellSeconds);
             if (dwellProgress >= requiredDwellSeconds)
             {
                 dwellSatisfied = true;
@@ -81,6 +84,9 @@ public sealed class EarthquakeProtectionTrigger : MonoBehaviour
         isInside = true;
         earthquakeController?.MarkProtectionTriggerEntered();
         if (player == null) player = other.transform;
+        if (crouchController == null) crouchController = other.GetComponent<PlayerCrouchController>();
+        if (crouchController == null || !crouchController.IsCrouching) { notificationUI?.ShowMessage("Protección incompleta", "Debes agacharte para protegerte."); Debug.Log("[Protection] Entered standing.", this); return; }
+        Debug.Log("[Protection] Entered crouching; dwell started.", this);
         if (earthquakeController == null || !earthquakeController.TryMarkProtectionEntered()) return;
         notificationUI?.ShowMessage("Zona de protección alcanzada", "Permanece bajo la mesa.");
         HidePromptAndHint();
@@ -102,9 +108,10 @@ public sealed class EarthquakeProtectionTrigger : MonoBehaviour
     public static bool IsEligibleState(EarthquakeState state) =>
         state is EarthquakeState.Light or EarthquakeState.Moderate or EarthquakeState.Strong;
 
-    public static float CalculateDwellProgress(float current, float deltaTime, bool inside, EarthquakeState state, float required)
+    public static float CalculateDwellProgress(float current, float deltaTime, bool inside, EarthquakeState state, float required) => CalculateDwellProgress(current, deltaTime, inside, true, state, required);
+    public static float CalculateDwellProgress(float current, float deltaTime, bool inside, bool crouching, EarthquakeState state, float required)
     {
-        if (!inside || !IsEligibleState(state)) return 0f;
+        if (!inside || !crouching || !IsEligibleState(state)) return 0f;
         return Mathf.Min(Mathf.Max(.25f, required), Mathf.Max(0f, current) + Mathf.Max(0f, deltaTime));
     }
 
@@ -143,11 +150,11 @@ public sealed class EarthquakeProtectionTrigger : MonoBehaviour
         if (hintRemaining > 0f && !isInside)
         {
             hintRemaining = Mathf.Max(0f, hintRemaining - Time.deltaTime);
-            SetText(objectiveHint, "Busca la zona señalizada bajo la mesa.", true);
+            SetText(objectiveHint, "Agáchate con Ctrl izquierdo y refúgiate bajo la mesa.", true);
         }
         else SetText(objectiveHint, string.Empty, false);
         float distance = player == null ? float.MaxValue : Vector3.Distance(player.position, transform.position);
-        SetText(contextualPrompt, "Entra en la zona de protección", active && !dwellSatisfied && distance <= promptDistance);
+        SetText(contextualPrompt, "[Ctrl] Agáchate y entra en la zona de protección", active && !dwellSatisfied && distance <= promptDistance);
         bool visible = playerCamera != null && IsVisibleFrom(playerCamera);
         bool showIndicator = active && !dwellSatisfied && distance > 2.2f && !visible;
         if (objectiveIndicator != null) objectiveIndicator.SetActive(showIndicator);

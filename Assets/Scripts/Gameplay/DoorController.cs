@@ -11,7 +11,8 @@ public class DoorController : MonoBehaviour, IInteractable
     [SerializeField] private Collider blockingCollider;
     [SerializeField] private EarthquakeController earthquakeController;
     [SerializeField] private ObjectivesManager objectivesManager;
-    private bool isOpen, isOpening;
+    private bool isOpen, isOpening, objectiveCompleted;
+    public bool IsOpen => isOpen;
     private Quaternion initialRotation, targetRotation;
     public bool CanOpen => !isOpen && !isOpening && objectivesManager != null && objectivesManager.IsCurrentObjective(objectiveId);
     public string Prompt => isOpen ? "Puerta abierta" : CanOpen ? "Abrir puerta" : earthquakeController != null && !earthquakeController.ProtectionResolved ? "Espera a que finalice el sismo" : "Puerta bloqueada";
@@ -19,6 +20,7 @@ public class DoorController : MonoBehaviour, IInteractable
     public void Interact()
     {
         if (!CanOpen) return;
+        Debug.Log("[Door] Door interaction started.", this);
         isOpening = true; targetRotation = initialRotation * Quaternion.Euler(0, openAngle, 0);
         if (audioSource != null && openClip != null) audioSource.PlayOneShot(openClip);
     }
@@ -29,7 +31,7 @@ public class DoorController : MonoBehaviour, IInteractable
         if (Quaternion.Angle(doorLeaf.localRotation, targetRotation) > .1f) return;
         doorLeaf.localRotation = targetRotation; isOpening = false; isOpen = true;
         if (blockingCollider != null) blockingCollider.enabled = false;
-        objectivesManager?.TryCompleteObjective(objectiveId);
+        if (!objectiveCompleted) { objectiveCompleted = objectivesManager?.TryCompleteObjective(objectiveId) == true; Debug.Log("[Door] Door objective completed: " + objectiveCompleted, this); }
     }
     public void OpenDoor() { if (doorLeaf == null) doorLeaf = transform; doorLeaf.localRotation = initialRotation * Quaternion.Euler(0, openAngle, 0); if (blockingCollider != null) blockingCollider.enabled = false; isOpen = true; }
 }
