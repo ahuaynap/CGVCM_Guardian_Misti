@@ -18,6 +18,8 @@ public sealed class EarthquakeController : MonoBehaviour
     [SerializeField] private EarthquakeReactiveProp[] reactiveProps;
     [SerializeField] private ObjectivesManager objectivesManager;
     [SerializeField] private NotificationUI notificationUI;
+    [SerializeField, Min(.25f)] private float failureMessageDelay = 1.5f;
+    [SerializeField, Min(1f)] private float recoveryGraceSeconds = 3f;
     public event Action<EarthquakeState> StateChanged;
     public event Action<string> CountdownChanged;
     public event Action EarthquakeStarted;
@@ -28,21 +30,28 @@ public sealed class EarthquakeController : MonoBehaviour
     public int DisplayedCountdown { get; private set; }
     public int ActivePhysicsProps => (reactiveProps??Array.Empty<EarthquakeReactiveProp>()).Count(p=>p!=null&&p.CanReceiveForces);
     public Vector3 CameraPresentationOffset => cameraEffectRoot==null?Vector3.zero:cameraEffectRoot.localPosition-initialCameraLocalPosition;
-    public bool ProtectionReached => protectionReached;
-    public bool ProtectionDwellSatisfied => protectionDwellSatisfied;
+    public bool ProtectionReached => validProtectionEntered;
+    public bool ProtectionDwellSatisfied => dwellCompleted;
+    public bool ProtectionEntered => protectionEntered;
+    public bool ValidProtectionEntered => validProtectionEntered;
+    public bool ProtectionSucceeded => protectionSucceeded;
+    public bool ProtectionFailed => protectionFailed;
+    public bool EarthquakeFinishedState => earthquakeFinished;
+    public bool ProtectionResolved => protectionResolved;
+    public bool HasFailureRecovery => failureMessageDelay > 0f && recoveryGraceSeconds > 0f;
     public bool IsProtectionPhase => State is EarthquakeState.Light or EarthquakeState.Moderate or EarthquakeState.Strong;
     private Vector3 initialCameraLocalPosition;
     private float[] stableIntensities=Array.Empty<float>(), emergencyIntensities=Array.Empty<float>();
     private bool[] emergencyEnabled=Array.Empty<bool>();
-    private float preparationRemaining, earthquakeElapsed, startBannerRemaining;
-    private bool sequenceStarted, protectionReached, protectionDwellSatisfied, insideProtection, isShuttingDown;
+    private float preparationRemaining, earthquakeElapsed, startBannerRemaining, finishedElapsed, failureDelayRemaining;
+    private bool sequenceStarted, protectionEntered, validProtectionEntered, dwellCompleted, protectionSucceeded, earthquakeFinished, protectionFailed, protectionResolved, insideProtection, isShuttingDown;
 
     private void Start()=>BeginSequence();
-    private void Update()=>Tick(Time.deltaTime);
+    private void Update(){Tick(Time.deltaTime);TickProtectionResolution(Time.deltaTime);}
     public bool BeginSequence()
     {
         if(sequenceStarted||isShuttingDown||profile==null)return false;
-        sequenceStarted=true;preparationRemaining=Mathf.Max(0f,profile.PreparationCountdown);earthquakeElapsed=0f;startBannerRemaining=0f;protectionReached=false;protectionDwellSatisfied=false;insideProtection=false;CurrentIntensity=0f;
+        sequenceStarted=true;preparationRemaining=Mathf.Max(0f,profile.PreparationCountdown);earthquakeElapsed=0f;startBannerRemaining=finishedElapsed=failureDelayRemaining=0f;protectionEntered=validProtectionEntered=dwellCompleted=protectionSucceeded=earthquakeFinished=protectionFailed=protectionResolved=insideProtection=false;CurrentIntensity=0f;
         if(cameraEffectRoot!=null)initialCameraLocalPosition=cameraEffectRoot.localPosition;
         CacheLights();SetParticleRate(dust,0);SetParticleRate(debris,0);SetState(EarthquakeState.Preparing);PublishCountdown(true);return true;
     }
@@ -56,15 +65,34 @@ public sealed class EarthquakeController : MonoBehaviour
         if(State==EarthquakeState.Strong&&!insideProtection)SimulationSession.Instance?.RecordStrongOutside(deltaTime);
         ApplyPresentation();if(earthquakeElapsed>=profile.Duration)FinishEarthquake();
     }
-    public bool TryMarkProtectionEntered(){if(!IsProtectionPhase)return false;insideProtection=true;if(!protectionReached){protectionReached=true;SimulationSession.Instance?.RecordProtection(earthquakeElapsed);}return true;}
-    public void MarkProtectionDwellSatisfied(){if(IsProtectionPhase&&insideProtection)protectionDwellSatisfied=true;}
-    public void MarkProtectionExited(){insideProtection=false;}
-    public void ResetSequence(){sequenceStarted=false;protectionReached=false;protectionDwellSatisfied=false;insideProtection=false;preparationRemaining=earthquakeElapsed=startBannerRemaining=CurrentIntensity=0f;RestorePresentation();SetState(EarthquakeState.Inactive);}
+    public void MarkProtectionTriggerEntered(){protectionEntered=true;Debug.Log("[Protection] Player entered protection trigger. Phase="+State,this);}
+    public bool TryMarkProtectionEntered(){protectionEntered=true;if(!IsProtectionPhase)return false;insideProtection=true;if(!validProtectionEntered){validProtectionEntered=true;SimulationSession.Instance?.RecordProtection(earthquakeElapsed);Debug.Log("[Protection] Valid protection entry. Dwell started. Phase="+State,this);}return true;}
+    public void MarkProtectionDwellSatisfied(){if(!IsProtectionPhase||!insideProtection||dwellCompleted)return;dwellCompleted=true;protectionSucceeded=true;Debug.Log("[Protection] Dwell completed. Protection succeeded.",this);}
+    public void MarkProtectionExited(){insideProtection=false;Debug.Log("[Protection] Player exited protection trigger. Phase="+State,this);}
+    public void ResetSequence(){sequenceStarted=false;protectionEntered=validProtectionEntered=dwellCompleted=protectionSucceeded=earthquakeFinished=protectionFailed=protectionResolved=insideProtection=false;preparationRemaining=earthquakeElapsed=startBannerRemaining=finishedElapsed=failureDelayRemaining=CurrentIntensity=0f;RestorePresentation();SetState(EarthquakeState.Inactive);}
     public static EarthquakeState StateForProgress(float p)=>p<.25f?EarthquakeState.Light:p<.5f?EarthquakeState.Moderate:p<.75f?EarthquakeState.Strong:EarthquakeState.Decreasing;
     private void PublishCountdown(bool force){int value=Mathf.Clamp(Mathf.CeilToInt(preparationRemaining),1,3);if(!force&&DisplayedCountdown==value)return;DisplayedCountdown=value;CountdownChanged?.Invoke($"El simulacro comenzará en {value}...");}
     private void StartEarthquake(){DisplayedCountdown=0;CountdownChanged?.Invoke("¡SISMO!");startBannerRemaining=.75f;SetState(EarthquakeState.Light);objectivesManager?.TryCompleteObjective(GameIds.Level01Preparation);SimulationSession.Instance?.StartTimer();EarthquakeStarted?.Invoke();PlayOptional(rumbleSource);PlayOptional(alarmSource);PlayParticles(dust);PlayParticles(debris);}
-    private void FinishEarthquake(){CurrentIntensity=0f;SetParticleRate(dust,0);SetParticleRate(debris,0);StopOptional(alarmSource);if(rumbleSource!=null&&rumbleSource.clip!=null)rumbleSource.volume=0;foreach(var prop in reactiveProps??Array.Empty<EarthquakeReactiveProp>())prop?.StopForces();RestorePresentation();SetState(EarthquakeState.Finished);CountdownChanged?.Invoke(string.Empty);StopParticles(dust);StopParticles(debris);notificationUI?.ShowMessage("Sismo finalizado", "El sismo ha finalizado. Evacúa con precaución.");TryAdvanceProtectionObjective();EarthquakeFinished?.Invoke();}
-    private void TryAdvanceProtectionObjective(){if(State==EarthquakeState.Finished&&protectionDwellSatisfied)objectivesManager?.TryCompleteObjective(GameIds.Level01Protect);}
+    private void FinishEarthquake(){CurrentIntensity=0f;SetParticleRate(dust,0);SetParticleRate(debris,0);StopOptional(alarmSource);if(rumbleSource!=null&&rumbleSource.clip!=null)rumbleSource.volume=0;foreach(var prop in reactiveProps??Array.Empty<EarthquakeReactiveProp>())prop?.StopForces();RestorePresentation();SetState(EarthquakeState.Finished);earthquakeFinished=true;finishedElapsed=0f;failureDelayRemaining=failureMessageDelay;CountdownChanged?.Invoke(string.Empty);StopParticles(dust);StopParticles(debris);Debug.Log("[Protection] Earthquake finished. Awaiting protection resolution.",this);if(protectionSucceeded)ResolveProtection(true,false);EarthquakeFinished?.Invoke();}
+    public void TickProtectionResolution(float deltaTime)
+    {
+        if(!earthquakeFinished||protectionResolved||deltaTime<=0f)return;
+        finishedElapsed+=deltaTime;
+        if(protectionSucceeded){ResolveProtection(true,false);return;}
+        failureDelayRemaining=Mathf.Max(0f,failureDelayRemaining-deltaTime);
+        if(failureDelayRemaining<=0f){ResolveProtection(false,false);return;}
+        if(finishedElapsed>=recoveryGraceSeconds&&objectivesManager!=null&&objectivesManager.IsCurrentObjective(GameIds.Level01Protect)){Debug.LogWarning("[Protection] Recovery guard resolved a stuck protection objective.",this);ResolveProtection(false,true);}
+    }
+    public bool ResolveProtection(bool succeeded,bool recovery)
+    {
+        if(!earthquakeFinished||protectionResolved)return false;
+        protectionResolved=true;protectionSucceeded=succeeded;protectionFailed=!succeeded;
+        if(succeeded)notificationUI?.ShowMessage("Protección completada.","El sismo ha finalizado. Evacúa con precaución.");
+        else{SimulationSession.Instance?.RecordProtectionFailure();notificationUI?.ShowMessage("Protección no alcanzada","No alcanzaste la zona de protección a tiempo.");}
+        bool advanced=objectivesManager!=null&&objectivesManager.IsCurrentObjective(GameIds.Level01Protect)&&objectivesManager.TryCompleteObjective(GameIds.Level01Protect);
+        Debug.Log($"[Protection] Resolved as {(succeeded?"success":"failure")}. Objective advanced={advanced}. Recovery={recovery}",this);return advanced;
+    }
+
     private void SetState(EarthquakeState next){if(State==next)return;State=next;if(next is EarthquakeState.Moderate or EarthquakeState.Strong)ReactProps(next);StateChanged?.Invoke(State);}
     private void ReactProps(EarthquakeState phase){float force=profile.MaximumPropForce*profile.EvaluateCurve(profile.PropForceCurve,earthquakeElapsed);int limit=Mathf.Min(profile.MaximumActivePhysicsProps,reactiveProps?.Length??0);for(int i=0;i<limit;i++)if(reactiveProps[i]!=null&&reactiveProps[i].React(phase,force)&&impactSource!=null&&impactSource.clip!=null)impactSource.PlayOneShot(impactSource.clip,Mathf.Clamp01(CurrentIntensity));}
     private void ApplyPresentation()

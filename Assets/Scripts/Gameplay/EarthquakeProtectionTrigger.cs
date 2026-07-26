@@ -38,6 +38,7 @@ public sealed class EarthquakeProtectionTrigger : MonoBehaviour
     public bool IsInside => isInside;
     public bool DwellSatisfied => dwellSatisfied;
     public bool IsHighlighted { get; private set; }
+    public static bool AcceptsPlayer(Collider other) => other != null && other.CompareTag("Player");
 
     private void Awake()
     {
@@ -76,8 +77,9 @@ public sealed class EarthquakeProtectionTrigger : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag("Player")) return;
+        if (!AcceptsPlayer(other)) return;
         isInside = true;
+        earthquakeController?.MarkProtectionTriggerEntered();
         if (player == null) player = other.transform;
         if (earthquakeController == null || !earthquakeController.TryMarkProtectionEntered()) return;
         notificationUI?.ShowMessage("Zona de protección alcanzada", "Permanece bajo la mesa.");
@@ -87,10 +89,11 @@ public sealed class EarthquakeProtectionTrigger : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if (!other.CompareTag("Player")) return;
+        if (!AcceptsPlayer(other)) return;
         isInside = false;
         earthquakeController?.MarkProtectionExited();
         if (dwellSatisfied) return;
+        if (dwellProgress > 0f) Debug.Log("[Protection] Dwell reset after early exit.", this);
         dwellProgress = 0f;
         if (earthquakeController != null && earthquakeController.IsProtectionPhase)
             notificationUI?.ShowMessage("Protección incompleta", "Permanece en la zona de protección.");

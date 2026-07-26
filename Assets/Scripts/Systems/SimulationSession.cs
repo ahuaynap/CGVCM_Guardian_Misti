@@ -25,6 +25,7 @@ public sealed class SimulationSession : MonoBehaviour
     public int MissingItemAttempts { get; private set; }
     public int Pauses { get; private set; }
     public bool ProtectionReached { get; private set; }
+    public bool ProtectionFailed { get; private set; }
     public bool ObjectiveOrderRespected { get; private set; } = true;
     public bool IsRunning { get; private set; }
     public bool IsFinished { get; private set; }
@@ -58,7 +59,7 @@ public sealed class SimulationSession : MonoBehaviour
     public void ResetRun()
     {
         TotalTime=0;Level01Time=0;Level02Time=0;TimeToProtection=-1;TimeToLevel01Exit=-1;TimeToBeacon=-1;TimeToFinalSafeZone=-1;DistanceTravelled=0;StrongPhaseOutsideTime=0;
-        IncorrectInteractions=0;HazardContacts=0;MissingItemAttempts=0;Pauses=0;ProtectionReached=false;ObjectiveOrderRespected=true;IsRunning=false;IsFinished=false;StopCount=0;
+        IncorrectInteractions=0;HazardContacts=0;MissingItemAttempts=0;Pauses=0;ProtectionReached=false;ProtectionFailed=false;ObjectiveOrderRespected=true;IsRunning=false;IsFinished=false;StopCount=0;
         Difficulty=PlayerPrefs.GetString(DifficultyKey,"Intermedio");ObjectiveTimestamps.Clear();PositionSamples.Clear();hasPlayerPosition=false;nextPositionSampleTime=0;
     }
     public bool StopTimer()
@@ -82,6 +83,7 @@ public sealed class SimulationSession : MonoBehaviour
     public void RecordMissingItemAttempt(){MissingItemAttempts++;}
     public void RecordHazard(){HazardContacts++;}
     public void RecordProtection(float elapsed){if(ProtectionReached)return;ProtectionReached=true;TimeToProtection=Mathf.Max(0,elapsed);}
+    public void RecordProtectionFailure(){if(ProtectionFailed)return;ProtectionFailed=true;HazardContacts++;}
     public void RecordStrongOutside(float deltaTime){if(Time.timeScale>0)StrongPhaseOutsideTime+=Mathf.Max(0,deltaTime);}
     public void RecordPause(){Pauses++;}
     public void ReportPlayerPosition(Vector3 position)

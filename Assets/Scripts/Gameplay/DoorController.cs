@@ -9,13 +9,16 @@ public class DoorController : MonoBehaviour, IInteractable
     [SerializeField] private AudioClip openClip;
     [SerializeField] private Transform doorLeaf;
     [SerializeField] private Collider blockingCollider;
+    [SerializeField] private EarthquakeController earthquakeController;
+    [SerializeField] private ObjectivesManager objectivesManager;
     private bool isOpen, isOpening;
     private Quaternion initialRotation, targetRotation;
-    public string Prompt => isOpen ? "Puerta abierta" : "Abrir puerta";
+    public bool CanOpen => !isOpen && !isOpening && objectivesManager != null && objectivesManager.IsCurrentObjective(objectiveId);
+    public string Prompt => isOpen ? "Puerta abierta" : CanOpen ? "Abrir puerta" : earthquakeController != null && !earthquakeController.ProtectionResolved ? "Espera a que finalice el sismo" : "Puerta bloqueada";
     private void Awake() { if (doorLeaf == null) doorLeaf = transform; if (blockingCollider == null) blockingCollider = GetComponent<Collider>(); initialRotation = doorLeaf.localRotation; }
     public void Interact()
     {
-        if (isOpen || isOpening || ObjectivesManager.Instance == null || !ObjectivesManager.Instance.IsCurrentObjective(objectiveId)) return;
+        if (!CanOpen) return;
         isOpening = true; targetRotation = initialRotation * Quaternion.Euler(0, openAngle, 0);
         if (audioSource != null && openClip != null) audioSource.PlayOneShot(openClip);
     }
@@ -26,7 +29,7 @@ public class DoorController : MonoBehaviour, IInteractable
         if (Quaternion.Angle(doorLeaf.localRotation, targetRotation) > .1f) return;
         doorLeaf.localRotation = targetRotation; isOpening = false; isOpen = true;
         if (blockingCollider != null) blockingCollider.enabled = false;
-        ObjectivesManager.Instance?.TryCompleteObjective(objectiveId);
+        objectivesManager?.TryCompleteObjective(objectiveId);
     }
     public void OpenDoor() { if (doorLeaf == null) doorLeaf = transform; doorLeaf.localRotation = initialRotation * Quaternion.Euler(0, openAngle, 0); if (blockingCollider != null) blockingCollider.enabled = false; isOpen = true; }
 }

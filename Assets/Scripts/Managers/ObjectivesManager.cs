@@ -24,11 +24,13 @@ public class ObjectivesManager : MonoBehaviour
     public bool TryCompleteObjective(string objectiveId)
     {
         if (!IsCurrentObjective(objectiveId)) { SimulationSession.Instance?.RecordIncorrectInteraction(); SimulationSession.Instance?.RecordObjectiveOrderViolation(); return false; }
+        string completedId = GetCurrentObjective().Id;
         SimulationSession.Instance?.RecordObjective(objectiveId);
         currentObjectiveIndex++;
-        if (IsSimulationCompleted) { objectiveUI?.Hide(); AllObjectivesCompleted?.Invoke(); return true; }
+        if (IsSimulationCompleted) { objectiveUI?.Hide(); AllObjectivesCompleted?.Invoke(); Debug.Log("[Objective] Advanced from " + completedId + "; simulation completed.", this); return true; }
         objectiveUI?.Refresh(GetCurrentObjective());
         ObjectiveChanged?.Invoke(GetCurrentObjective());
+        Debug.Log("[Objective] Advanced from " + completedId + " to " + GetCurrentObjective().Id + ".", this);
         return true;
     }
     public bool IsSimulationCompleted => currentObjectiveIndex >= objectives.Count;
