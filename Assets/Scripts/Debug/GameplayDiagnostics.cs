@@ -21,6 +21,8 @@ public sealed class GameplayDiagnostics : MonoBehaviour
     [SerializeField] private EarthquakeController earthquakeController;
     [SerializeField] private Transform protectionDesk;
     [SerializeField] private EarthquakeProtectionTrigger protectionTrigger;
+    [SerializeField] private AftershockController aftershockController;
+    [SerializeField] private SafeZoneController safeZoneController;
     private Vector3 previousPosition;
     private float smoothedFps;
     public string Snapshot { get; private set; }
@@ -54,7 +56,8 @@ public sealed class GameplayDiagnostics : MonoBehaviour
              "hierarchy " + (lookController?.HierarchyDescription ?? "incompleta") + "\n" +
             "shake " + lookController?.ShakeOffset + "  crouchHeight " + lookController?.CrouchHeightOffset + "\n" +
             "crouching " + crouchController?.IsCrouching + "  quake " + earthquakeController?.State + "\n" +
-            DeskDiagnostics() + "\nFPS " + smoothedFps.ToString("F1");
+            DeskDiagnostics() + Level02Diagnostics() + "\nFPS " + smoothedFps.ToString("F1");
     }
+    private string Level02Diagnostics(){if(aftershockController==null)return string.Empty;AudioSource source=aftershockController.RumbleSource;Vector3 safe=safeZoneController==null?transform.position:safeZoneController.transform.position;RaycastHit hit;bool blocked=Physics.Linecast(transform.position+Vector3.up, safe+Vector3.up, out hit, ~0, QueryTriggerInteraction.Ignore);return "\nAFTERSHOCK state "+aftershockController.State+" controllers "+FindObjectsByType<AftershockController>(FindObjectsInactive.Include).Length+" elapsed "+aftershockController.StateElapsed.ToString("F1")+"\nrumble assigned "+(source!=null)+" clip "+(source?.clip!=null)+" playing "+(source?.isPlaying??false)+" volume "+(source==null?0:source.volume).ToString("F2")+" loop "+(source?.loop??false)+"\nROUTE distance "+Vector3.Distance(transform.position,safe).ToString("F1")+" blocker "+(blocked?hit.collider.name:"ninguno")+" layer "+(blocked?hit.collider.gameObject.layer:-1)+" type "+(blocked?hit.collider.GetType().Name:"ninguno")+" reachable "+(!blocked)+" inside "+safeZoneController?.IsPlayerInside+"\n";}
     private string DeskDiagnostics(){if(protectionDesk==null)return "DESK missing";var cs=protectionDesk.GetComponentsInChildren<Collider>(true);Bounds b=cs.Length>0?cs[0].bounds:new Bounds(protectionDesk.position,Vector3.zero);foreach(var c in cs)b.Encapsulate(c.bounds);string names=string.Join(",",cs.Select(c=>c.name+":"+(c.enabled?"on":"off")+":"+(c.isTrigger?"trigger":"solid")));bool collide=!Physics.GetIgnoreLayerCollision(gameObject.layer,protectionDesk.gameObject.layer);return "DESK bounds "+b.size+" colliders "+cs.Length+" ["+names+"]\nlayers player "+gameObject.layer+" desk "+protectionDesk.gameObject.layer+" collide "+collide+" inside "+protectionTrigger?.IsInside+" crouched "+crouchController?.IsCrouching+" clearance 2.30x1.35x1.53";}
 }

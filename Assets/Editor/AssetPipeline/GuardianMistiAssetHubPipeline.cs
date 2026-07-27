@@ -101,8 +101,8 @@ public static class GuardianMistiAssetHubPipeline
         Place(group.transform,Semantic.Tower,"AssetHub_CommunicationsTower",new Vector3(-8f,0,13f),Quaternion.identity);
         Place(group.transform,Semantic.Generator,"AssetHub_PortableGenerator",new Vector3(-5.7f,0,13.2f),Quaternion.Euler(0,25,0));
         for(int i=0;i<3;i++)Place(group.transform,Semantic.Crate,"AssetHub_MedicalCrate_L02_"+(i+1),new Vector3(5.8f+i*.95f,0,7.5f+i*.35f),Quaternion.Euler(0,-8+i*12,0));
-        Place(group.transform,Semantic.Tent,"AssetHub_MedicalTent_L02",new Vector3(0,0,18.2f),Quaternion.Euler(0,180,0));
-        Place(group.transform,Semantic.Desk,"AssetHub_CommandDesk_L02",new Vector3(-1.2f,0,19.5f),Quaternion.Euler(0,180,0));
+        Place(group.transform,Semantic.Tent,"AssetHub_MedicalTent_L02",new Vector3(0,0,18.2f),Quaternion.identity);
+        CreateRouteMarkers(group.transform);
         EditorSceneManager.MarkSceneDirty(scene);EditorSceneManager.SaveScene(scene);
     }
 
@@ -178,6 +178,12 @@ public static class GuardianMistiAssetHubPipeline
         GameplayDiagnostics diagnostics=UnityEngine.Object.FindFirstObjectByType<GameplayDiagnostics>();if(diagnostics!=null){SerializedObject so=new SerializedObject(diagnostics);so.FindProperty("protectionDesk").objectReferenceValue=zone.GetComponentsInChildren<AssetHubGeneratedMarker>(true).FirstOrDefault(m=>m.SemanticId==Semantic.Desk.ToString())?.transform;so.FindProperty("protectionTrigger").objectReferenceValue=zone.GetComponentInChildren<EarthquakeProtectionTrigger>(true);so.ApplyModifiedPropertiesWithoutUndo();}
     }
     private static Light CreateLight(Transform parent,string name,Vector3 localPosition,LightType type,Color color,float intensity,float range){var go=new GameObject(name);go.transform.SetParent(parent,false);go.transform.localPosition=localPosition;var light=go.AddComponent<Light>();light.type=type;light.color=color;light.intensity=intensity;light.range=range;light.renderMode=LightRenderMode.Auto;return light;}
+    private static void CreateRouteMarkers(Transform parent)
+    {
+        var route=new GameObject("Generated_Level02Route");route.transform.SetParent(parent,false);
+        (string,Vector3)[] points={("Level02Start",new Vector3(0,0,.5f)),("EvacuationRouteCheckpoint01",new Vector3(-1.4f,0,4f)),("CommunicationsArea",new Vector3(1.4f,0,8f)),("AftershockSection",new Vector3(1.8f,0,11.5f)),("MedicalTentApproach",new Vector3(1.5f,0,15.2f)),("RouteSafeZone",new Vector3(0,0,19f))};
+        foreach(var point in points){var marker=new GameObject(point.Item1);marker.transform.SetParent(route.transform,false);marker.transform.position=point.Item2;marker.hideFlags=HideFlags.NotEditable;}
+    }
     private static GameObject FindObject(string name)=>UnityEngine.Object.FindObjectsByType<Transform>(FindObjectsInactive.Include).FirstOrDefault(t=>t.name==name)?.gameObject;
     private static Bounds RendererBounds(GameObject go){Renderer[] renderers=go.GetComponentsInChildren<Renderer>(true);Bounds b=renderers.Length==0?new Bounds(Vector3.zero,Vector3.one):renderers[0].bounds;for(int i=1;i<renderers.Length;i++)b.Encapsulate(renderers[i].bounds);return b;}
     private static string Normalize(string value)=>value.ToLowerInvariant().Replace("-","_").Replace(" ","_");

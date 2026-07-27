@@ -1,6 +1,7 @@
 #if UNITY_INCLUDE_TESTS
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
@@ -56,7 +57,7 @@ public sealed class GuardianMistiProtectionPlayModeTests
     }
     [UnityTest] public IEnumerator Level02AssetHubResponseAreaCompletesWithoutLevel03()
     {
-        yield return new EnterPlayMode();UnityEngine.SceneManagement.SceneManager.LoadScene(SceneNames.Level02);yield return null;var all=Object.FindObjectsByType<Transform>(FindObjectsInactive.Include);Assert.NotNull(System.Array.Find(all,t=>t.name=="AssetHub_CommunicationsTower"));Assert.NotNull(System.Array.Find(all,t=>t.name=="AssetHub_PortableGenerator"));Assert.NotNull(System.Array.Find(all,t=>t.name=="AssetHub_MedicalTent_L02"));Assert.IsFalse(Application.CanStreamedLevelBeLoaded("Level03"));var safe=Object.FindFirstObjectByType<SafeZoneController>();Assert.NotNull(safe);yield return new ExitPlayMode();
+        yield return new EnterPlayMode();UnityEngine.SceneManagement.SceneManager.LoadScene(SceneNames.Level02);yield return null;var all=Object.FindObjectsByType<Transform>(FindObjectsInactive.Include);Assert.NotNull(System.Array.Find(all,t=>t.name=="AssetHub_CommunicationsTower"));Assert.NotNull(System.Array.Find(all,t=>t.name=="AssetHub_PortableGenerator"));var tent=System.Array.Find(all,t=>t.name=="AssetHub_MedicalTent_L02");Assert.NotNull(tent);var rear=tent.GetComponentsInChildren<BoxCollider>(true).First(c=>c.name=="RearWall");Assert.Greater(rear.bounds.center.z,tent.position.z);var aftershock=Object.FindFirstObjectByType<AftershockController>();Assert.NotNull(aftershock);Assert.NotNull(aftershock.RumbleSource);Assert.AreEqual(1,Object.FindObjectsByType<AftershockController>(FindObjectsInactive.Include).Length);Assert.IsEmpty(GuardianMistiAssetHubValidator.FindLevel02RouteBlockers(all));Assert.IsFalse(Application.CanStreamedLevelBeLoaded("Level03"));var safe=Object.FindFirstObjectByType<SafeZoneController>();Assert.NotNull(safe);yield return new ExitPlayMode();
     }
     private static void AssertGuidanceHidden(){var all=Object.FindObjectsByType<Transform>(FindObjectsInactive.Include);foreach(string n in new[]{"ProtectionObjectiveHint","ProtectionContextPrompt","ProtectionWorldIndicator"}){var go=System.Array.Find(all,t=>t.name==n)?.gameObject;Assert.NotNull(go);Assert.False(go.activeSelf,n+" remained active");}}
     private static T New<T>(string name) where T:Component=>new GameObject(name).AddComponent<T>();
