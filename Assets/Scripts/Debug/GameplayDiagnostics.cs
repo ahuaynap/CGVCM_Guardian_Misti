@@ -19,10 +19,14 @@ public sealed class GameplayDiagnostics : MonoBehaviour
     [SerializeField] private PlayerLookController lookController;
     [SerializeField] private PlayerCrouchController crouchController;
     [SerializeField] private EarthquakeController earthquakeController;
+    [SerializeField] private Transform protectionDesk;
+    [SerializeField] private EarthquakeProtectionTrigger protectionTrigger;
     private Vector3 previousPosition;
     private float smoothedFps;
     public string Snapshot { get; private set; }
 
+    private void Start(){ValidateProtectionDesk();}
+    private void ValidateProtectionDesk(){if(protectionDesk==null){Debug.LogWarning("[ProtectionDesk] No physical desk detected.",this);return;}var colliders=protectionDesk.GetComponentsInChildren<Collider>(true);if(colliders.Length==0)Debug.LogWarning("[ProtectionDesk] No physical collider found.",this);else if(colliders.All(c=>c.isTrigger))Debug.LogWarning("[ProtectionDesk] All desk colliders are triggers.",this);else if(Physics.GetIgnoreLayerCollision(gameObject.layer,protectionDesk.gameObject.layer))Debug.LogWarning("[ProtectionDesk] Desk layer does not collide with Player layer.",this);}
     private void Update()
     {
         float dt = Mathf.Max(Time.unscaledDeltaTime, .0001f);
@@ -49,6 +53,8 @@ public sealed class GameplayDiagnostics : MonoBehaviour
             $"controller {lookController?.GetType().Name ?? "ninguno"}  active {PlayerLookController.CountActiveLookControllers(gameObject)}\n" +
              "hierarchy " + (lookController?.HierarchyDescription ?? "incompleta") + "\n" +
             "shake " + lookController?.ShakeOffset + "  crouchHeight " + lookController?.CrouchHeightOffset + "\n" +
-            "crouching " + crouchController?.IsCrouching + "  quake " + earthquakeController?.State + "\nFPS " + smoothedFps.ToString("F1");
+            "crouching " + crouchController?.IsCrouching + "  quake " + earthquakeController?.State + "\n" +
+            DeskDiagnostics() + "\nFPS " + smoothedFps.ToString("F1");
     }
+    private string DeskDiagnostics(){if(protectionDesk==null)return "DESK missing";var cs=protectionDesk.GetComponentsInChildren<Collider>(true);Bounds b=cs.Length>0?cs[0].bounds:new Bounds(protectionDesk.position,Vector3.zero);foreach(var c in cs)b.Encapsulate(c.bounds);string names=string.Join(",",cs.Select(c=>c.name+":"+(c.enabled?"on":"off")+":"+(c.isTrigger?"trigger":"solid")));bool collide=!Physics.GetIgnoreLayerCollision(gameObject.layer,protectionDesk.gameObject.layer);return "DESK bounds "+b.size+" colliders "+cs.Length+" ["+names+"]\nlayers player "+gameObject.layer+" desk "+protectionDesk.gameObject.layer+" collide "+collide+" inside "+protectionTrigger?.IsInside+" crouched "+crouchController?.IsCrouching+" clearance 2.30x1.35x1.53";}
 }

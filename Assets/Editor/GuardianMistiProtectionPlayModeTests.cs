@@ -54,6 +54,10 @@ public sealed class GuardianMistiProtectionPlayModeTests
     {
         yield return new EnterPlayMode();foreach(string scene in new[]{SceneNames.Level01,SceneNames.Level02}){UnityEngine.SceneManagement.SceneManager.LoadScene(scene);yield return null;var look=Object.FindFirstObjectByType<PlayerLookController>();Assert.NotNull(look,scene);Assert.AreEqual(1,PlayerLookController.CountActiveLookControllers(look.gameObject),scene);Assert.AreEqual(look.CameraHeightPivot,look.CameraLookPivot.parent);Assert.AreEqual(look.CameraLookPivot,look.CameraShakePivot.parent);Assert.AreEqual(look.CameraShakePivot,look.MainCamera.transform.parent);}yield return new ExitPlayMode();
     }
+    [UnityTest] public IEnumerator Level02AssetHubResponseAreaCompletesWithoutLevel03()
+    {
+        yield return new EnterPlayMode();UnityEngine.SceneManagement.SceneManager.LoadScene(SceneNames.Level02);yield return null;var all=Object.FindObjectsByType<Transform>(FindObjectsInactive.Include);Assert.NotNull(System.Array.Find(all,t=>t.name=="AssetHub_CommunicationsTower"));Assert.NotNull(System.Array.Find(all,t=>t.name=="AssetHub_PortableGenerator"));Assert.NotNull(System.Array.Find(all,t=>t.name=="AssetHub_MedicalTent_L02"));Assert.IsFalse(Application.CanStreamedLevelBeLoaded("Level03"));var safe=Object.FindFirstObjectByType<SafeZoneController>();Assert.NotNull(safe);yield return new ExitPlayMode();
+    }
     private static void AssertGuidanceHidden(){var all=Object.FindObjectsByType<Transform>(FindObjectsInactive.Include);foreach(string n in new[]{"ProtectionObjectiveHint","ProtectionContextPrompt","ProtectionWorldIndicator"}){var go=System.Array.Find(all,t=>t.name==n)?.gameObject;Assert.NotNull(go);Assert.False(go.activeSelf,n+" remained active");}}
     private static T New<T>(string name) where T:Component=>new GameObject(name).AddComponent<T>();
     private static EarthquakeController Quake(float countdown,float duration){var q=New<EarthquakeController>("Quake");var p=ScriptableObject.CreateInstance<EarthquakeProfile>();Set(p,"<PreparationCountdown>k__BackingField",countdown);Set(p,"<Duration>k__BackingField",duration);Set(q,"profile",p);return q;}
