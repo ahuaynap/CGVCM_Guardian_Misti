@@ -1,0 +1,14 @@
+technology_or_package,version,purpose,confirmed_usage,evidence_path,report_relevance,notes
+Unity,6000.5.3f1,Game engine,true,ProjectSettings/ProjectVersion.txt,High,Do not upgrade for delivery
+C#,Unity profile,Runtime scripts,true,Assets/Scripts,High,
+Universal Render Pipeline,17.5.0,Rendering and URP/Lit,true,Packages/manifest.json;Assets/Settings,High,
+Unity Input System,1.19.0,Keyboard mouse and declared gamepad,true,Assets/InputSystem_Actions.inputactions,High,Gamepad not physically tested
+uGUI,2.5.0,Canvas UI,true,Packages/manifest.json;UI prefabs,High,
+TextMeshPro,Built-in/package dependency,Readable text,true,Assets/TextMesh Pro;scenes,High,
+Cinemachine,3.1.6,Camera package available,partial,Packages/manifest.json,Low,Runtime authority is project look controller
+AI Navigation,2.0.13,Navigation package available,false confirmed,Packages/manifest.json,Low,Player uses CharacterController
+Unity Test Framework,1.7.0,Automated testing,true,Assets/Editor,High,
+Blender,version unknown,3D review/preparation,not repository-confirmed,External capture required,High,No .blend found
+AssetHub,version/service unknown,Generated 3D assets,true,Assets/Art/Models,High,Licenses must be supplied
+FBX,format,3D interchange,true,Assets/Art/Models,High,
+Ubuntu,24.04 development context,Development OS,true,Environment evidence,Medium,Not a measured requirement

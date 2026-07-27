@@ -1,0 +1,15 @@
+test_path,test_name,mode,system,scene,expected_behavior,last_result,execution_date,notes
+Assets/Editor/GuardianMistiEditModeTests.cs,Protection eligibility tests,EditMode,Earthquake protection,Level01,Only active phases qualify,Passed,2026-07-27,Included in 87/87
+Assets/Editor/GuardianMistiEditModeTests.cs,Dwell reset and success tests,EditMode,Protection,Level01,Continuous crouched dwell,Passed,2026-07-27,
+Assets/Editor/GuardianMistiEditModeTests.cs,Camera sensitivity tests,EditMode,Camera,Gameplay,Mouse direct and pitch clamped,Passed,2026-07-27,
+Assets/Editor/GuardianMistiEditModeTests.cs,Crouch safety tests,EditMode,Crouch,Gameplay,Valid height and jump policy,Passed,2026-07-27,
+Assets/Editor/GuardianMistiEditModeTests.cs,Aftershock sequence tests,EditMode,Aftershock,Level02,Finite distinct phases,Passed,2026-07-27,
+Assets/Editor/GuardianMistiEditModeTests.cs,Aftershock audio self-heal,EditMode,Audio,Level02,Source created and null-safe,Passed,2026-07-27,
+Assets/Editor/GuardianMistiEditModeTests.cs,Level02 route blocker test,EditMode,Collision,Level02,Detect blocker then pass,Passed,2026-07-27,
+Assets/Editor/GuardianMistiEditModeTests.cs,AssetHub prefab tests,EditMode,Assets,All,URP/colliders/identity,Passed,2026-07-27,
+Assets/Editor/GuardianMistiEditModeTests.cs,Build Settings test,EditMode,Scene flow,All,Only three active scenes,Passed,2026-07-27,
+Assets/Editor/GuardianMistiProtectionPlayModeTests.cs,Protection runtime scenarios,Editor-hosted PlayMode,Protection,Level01,Success/failure progress,Passed,2026-07-27,Uses EnterPlayMode
+Assets/Editor/GuardianMistiProtectionPlayModeTests.cs,Door runtime scenarios,Editor-hosted PlayMode,Door,Level01,Unlock/open/pass,Passed,2026-07-27,
+Assets/Editor/GuardianMistiProtectionPlayModeTests.cs,Gameplay camera hierarchy,Editor-hosted PlayMode,Camera,Level01;Level02,Single separated controller,Passed,2026-07-27,
+Assets/Editor/GuardianMistiProtectionPlayModeTests.cs,Level02 response area,Editor-hosted PlayMode,Assets/route,Level02,Tent/source/route valid,Passed,2026-07-27,
+Unity Test Runner,Separate PlayMode discovery,PlayMode,Test infrastructure,All,Discover runtime suite,0 tests discovered,2026-07-27,Assembly organization limitation

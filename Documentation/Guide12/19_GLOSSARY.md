@@ -1,0 +1,22 @@
+# Glosario
+
+- **Asset:** recurso digital usado por el proyecto.
+- **Collider:** volumen físico que participa en colisiones.
+- **Prefab:** plantilla reutilizable de GameObjects y componentes.
+- **Trigger:** collider que detecta entrada/salida sin bloquear físicamente.
+- **Material:** configuración visual aplicada a una superficie.
+- **Textura:** imagen que aporta color o detalle a un material.
+- **URP:** Universal Render Pipeline de Unity.
+- **Sismo:** movimiento principal simulado en Level01.
+- **Réplica:** evento sísmico posterior y más breve en Level02.
+- **Zona segura:** destino final detectado mediante trigger.
+- **Zona de protección:** espacio bajo la mesa válido durante el sismo.
+- **Interacción:** acción contextual ejecutada sobre un objeto.
+- **Inventario:** registro de ítems de progreso.
+- **Objetivo:** tarea activa con condición de cumplimiento.
+- **Simulador:** aplicación que representa un escenario para practicar acciones.
+- **Interfaz/HUD:** información superpuesta durante el juego.
+- **Primera persona:** perspectiva desde la posición visual del jugador.
+- **Dwell:** tiempo continuo exigido dentro de una zona.
+- **ScriptableObject:** asset de Unity que almacena configuración reutilizable.
+- **FBX:** formato de intercambio de modelos 3D.

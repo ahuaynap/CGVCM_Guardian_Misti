@@ -1,0 +1,18 @@
+scene,object_path,purpose,runtime_active,gameplay_component,renderer,collider,trigger,light,audio,source_asset,status
+MainMenu,Canvas/MainMenu,Navigation,true,MainMenuController,true,false,false,false,false,,Implemented
+Level01,Generated_GuardianMisti/GameplayPlayer,Player,true,FirstPersonController,true,CharacterController,false,false,AudioListener,GameplayPlayer.prefab,Implemented
+Level01,Generated_InteriorProtectionZone,Protection station,true,EarthquakeProtectionTrigger,true,Compound BoxColliders,true,true,false,InteriorProtectionZone.prefab,Implemented
+Level01,Generated_InteriorProtectionZone/AssetHub_CommandDesk,Desk visual,true,AssetHubGeneratedMarker,true,Compound BoxColliders,false,false,false,CommandDesk.prefab,Implemented
+Level01,InitialDoor,Room exit,true,DoorController,true,BoxColliders,false,true,AudioSource,FacilityExitDoor.prefab,Implemented
+Level01,EmergencyBackpack,Progress collectible,true,CollectibleItemController,true,Interaction collider,false,false,AudioSource,EmergencyBackpack.prefab,Implemented
+Level01,EvacuationTerminal,Evacuation activation,true,EvacuationTerminalController,true,Collider,false,true,AudioSource,EvacuationTerminal.prefab,Implemented
+Level01,LevelExit,Transition,true,LevelExitController,false,BoxCollider,true,false,false,,Implemented
+Level02,GameplaySystems,Aftershock and objectives,true,AftershockController,false,false,false,false,RumbleSource,GameplaySystems.prefab,Implemented/no clip
+Level02,EmergencyRadio,Collectible,true,CollectibleItemController,true,Collider,false,false,AudioSource,EmergencyRadio.prefab,Implemented
+Level02,AccessKey,Collectible,true,CollectibleItemController,true,Collider,false,false,AudioSource,AccessKey.prefab,Implemented
+Level02,EmergencyBeacon,Activation,true,EmergencyBeaconController,true,Collider,false,true,AudioSource,EmergencyBeacon.prefab,Implemented
+Level02,GeneratedEnvironment/Landmarks/Generated_AssetHub_Level02/AssetHub_CommunicationsTower,Landmark,true,AssetHubGeneratedMarker,true,BoxCollider,false,false,false,CommunicationsTower.prefab,Implemented
+Level02,GeneratedEnvironment/Landmarks/Generated_AssetHub_Level02/AssetHub_PortableGenerator,Set dressing,true,AssetHubGeneratedMarker,true,BoxCollider,false,false,false,PortableGenerator.prefab,Implemented
+Level02,GeneratedEnvironment/Landmarks/Generated_AssetHub_Level02/AssetHub_MedicalTent_L02,Final landmark,true,AssetHubGeneratedMarker,true,Wall BoxColliders,false,false,false,MedicalTent.prefab,Implemented
+Level02,SafeZone,Final completion,true,SafeZoneController,true,BoxCollider,true,false,false,SafeZone.prefab,Implemented
+Level02,Generated_Level02Route,Validation checkpoints,true,,false,false,false,false,false,,Editor/diagnostic markers

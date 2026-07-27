@@ -1,0 +1,11 @@
+category,display_name,source_path,prefab_path,scene_usage,interactive,reused,material_count,collider_type,status,known_issue
+Equipment,Emergency Backpack,Assets/Art/Models/Equipment/Medical_Backpack.fbx,Assets/Art/Prefabs/Equipment/EmergencyBackpack_Visual.prefab,Level01,true,false,1,BoxCollider,Implemented,Gameplay resides in wrapper
+Furniture,Command Desk,Assets/Art/Models/Furniture/Command_Desk.fbx,Assets/Art/Prefabs/Furniture/CommandDesk.prefab,Level01,true,false,1,Compound BoxColliders,Implemented,Generated geometry requires adapted clearance
+Environment,Medical Tent,Assets/Art/Models/Environment/Green_Medical_Tent.fbx,Assets/Art/Prefabs/Environment/MedicalTent.prefab,Level02,false,false,1,Three wall BoxColliders,Implemented,Entrance orientation is critical
+Infrastructure,Communications Tower,Assets/Art/Models/Infrastructure/Communications_Tower.fbx,Assets/Art/Prefabs/Infrastructure/CommunicationsTower.prefab,Level02,false,false,1,Narrow BoxCollider,Implemented,Decorative landmark
+Infrastructure,Sliding Facility Door,Assets/Art/Models/Infrastructure/Sliding_Hangar_Door.fbx,Assets/Art/Prefabs/Infrastructure/FacilityDoor.prefab,Reusable/usage not confirmed,false,true,1,Frame BoxColliders,Partial,Imported hierarchy/pivot suitability limited
+Equipment,Portable Generator,Assets/Art/Models/Equipment/Portable_Generator.fbx,Assets/Art/Prefabs/Equipment/PortableGenerator.prefab,Level02,false,false,1,Body BoxCollider,Implemented,No audio clip
+Equipment,Medical Crate,Assets/Art/Models/Equipment/Medical_Crate.fbx,Assets/Art/Prefabs/Equipment/MedicalCrate.prefab,Level01;Level02,false,true,1,BoxCollider,Implemented,Set dressing only
+Gameplay,Protection Zone,,Assets/Prefabs/Gameplay/InteriorProtectionZone.prefab,Level01,true,false,multiple,Trigger plus desk solids,Implemented,Requires crouch and active phase
+Gameplay,Facility Exit Door,,Assets/Prefabs/Gameplay/FacilityExitDoor.prefab,Level01,true,false,multiple,Frame and moving blocker,Implemented,AssetHub visual use not confirmed
+Gameplay,Safe Zone,,Assets/Prefabs/Gameplay/SafeZone.prefab,Level02,true,false,multiple,Trigger,Implemented,Completion requires objective order

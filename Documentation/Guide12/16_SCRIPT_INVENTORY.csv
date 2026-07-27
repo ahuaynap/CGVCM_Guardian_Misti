@@ -1,0 +1,19 @@
+script_path,class_name,purpose,active_scene_usage,dependencies,user_visible_behavior,verification_status,notes
+Assets/Scripts/Gameplay/PlayerLookController.cs,PlayerLookController,First-person camera,Level01;Level02,PlayerInput;camera pivots,Mouse/gamepad look,Verified,Mouse delta not time-scaled
+Assets/Scripts/Gameplay/PlayerCrouchController.cs,PlayerCrouchController,Crouch capsule and camera,Level01;Level02,CharacterController;input,Crouch status,Verified,Hold Left Ctrl
+Assets/Scripts/Systems/InteractionSystem.cs,InteractionSystem,Raycast interaction,Level01;Level02,IInteractable;UI,Context prompt,Verified,
+Assets/Scripts/Managers/ObjectivesManager.cs,ObjectivesManager,Objective sequence,Level01;Level02,Objective UI,Current objective,Verified,
+Assets/Scripts/Managers/InventoryManager.cs,InventoryManager,Progress items,Level01;Level02,Item definitions;UI,Inventory slots,Verified,
+Assets/Scripts/Gameplay/CollectibleItemController.cs,CollectibleItemController,One-shot collection,Level01;Level02,Inventory;objectives,Acquired notification,Verified,
+Assets/Scripts/Gameplay/DoorController.cs,DoorController,Gate and open door,Level01,Objectives;earthquake;interaction,Reactive door prompt,Verified,
+Assets/Scripts/Gameplay/EarthquakeProtectionTrigger.cs,EarthquakeProtectionTrigger,Protection validation,Level01,Earthquake;crouch;metrics,Dwell and prompts,Verified,Two seconds continuous
+Assets/Scripts/Systems/EarthquakeController.cs,EarthquakeController,Main earthquake,Level01,Profile;VFX;audio;objectives,Countdown and intensity,Verified,
+Assets/Scripts/Gameplay/AftershockController.cs,AftershockController,Exterior aftershock,Level02,Profile;VFX;optional audio,Warning and phases,Verified,No rumble clip found
+Assets/Scripts/Gameplay/AftershockRiskZone.cs,AftershockRiskZone,Risk metrics,Level02,Aftershock;session,Risk feedback,Verified,Trigger
+Assets/Scripts/Gameplay/SafeZoneController.cs,SafeZoneController,Final completion,Level02,Objectives;completion UI,Results display,Verified references,Manual end-to-end pending
+Assets/Scripts/Gameplay/LevelExitController.cs,LevelExitController,Level transition,Level01,SceneLoader;objectives,Loads Level02,Verified references,
+Assets/Scripts/Managers/SceneLoader.cs,SceneLoader,Central scene load,All,SceneNames;game state,Fades/transitions,Verified,
+Assets/Scripts/Systems/SimulationSession.cs,SimulationSession,Metrics and score,Level01;Level02,Objective events;zones,Results data,Verified,
+Assets/Scripts/UI/SimulationResultsUI.cs,SimulationResultsUI,Present metrics,Level02,SimulationSession,Final values,Implemented,Manual capture pending
+Assets/Scripts/Managers/PauseController.cs,PauseController,Pause flow,Level01;Level02,GameplayState;UI,Pause panel,Verified,
+Assets/Scripts/Debug/GameplayDiagnostics.cs,GameplayDiagnostics,F3 evidence,Level01;Level02,Player;quake;route,Technical overlay,Verified,Evaluator-facing
